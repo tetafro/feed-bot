@@ -1,6 +1,6 @@
-.PHONY: dep
+.PHONY: test
 dep:
-	@ dep ensure -v
+	@ go mod vendor
 
 .PHONY: lint
 lint:

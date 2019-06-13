@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"regexp"
 	"sync"
 	"time"
 
@@ -105,6 +106,7 @@ func (f *RSS) Last() (Item, error) {
 
 	item := Item{
 		Title:     last.Title,
+		Image:     getImage(last.Description),
 		Published: time.Now(),
 	}
 	if last.PublishedParsed != nil {
@@ -121,4 +123,14 @@ func (f *RSS) Last() (Item, error) {
 // sends them to channel.
 func (f *RSS) Feed() <-chan Item {
 	return f.feed
+}
+
+var regexpImageSrc = regexp.MustCompile(`src="([^\s]+)"`)
+
+func getImage(s string) string {
+	res := regexpImageSrc.FindStringSubmatch(s)
+	if len(res) != 2 {
+		return ""
+	}
+	return res[1]
 }

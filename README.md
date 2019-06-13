@@ -1,12 +1,11 @@
-# NOTIFY-BOT
+# FEED-BOT
 
-Example project to learn Telegram Bot API. This bot sends current time
-each 5 seconds to every user after "start" command. And stops after
-"stop" command.
+Example project to learn Telegram Bot API. This bot sends RSS feeds
+to users.
 
 ## Build and run
 
-Get Telegram API token from the bot called `@botfarther`.
+Create bot and get Telegram API token from the bot called `@botfarther`.
 
 Copy and populate config
 ```sh

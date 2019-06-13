@@ -17,3 +17,7 @@ build:
 .PHONY: run
 run:
 	@ ./bin/notify-bot
+
+.PHONY: docker
+docker:
+	@ docker build -t tetafro/feed-bot .

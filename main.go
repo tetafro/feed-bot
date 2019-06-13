@@ -10,7 +10,10 @@ import (
 func main() {
 	log.Print("Starting...")
 
-	cfg := mustConfig()
+	cfg, err := readConfig()
+	if err != nil {
+		log.Fatalf("Failed to read config: %v", err)
+	}
 
 	bot, err := NewBot(cfg.TelegramToken)
 	if err != nil {
@@ -33,5 +36,6 @@ func handleSignals() {
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 	defer signal.Stop(stop)
 
-	<-stop
+	sig := <-stop
+	log.Printf("Got %s", sig)
 }

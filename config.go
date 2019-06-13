@@ -10,9 +10,9 @@ type config struct {
 	TelegramToken string `envconfig:"TELEGRAM_TOKEN" required:"true"`
 }
 
-// mustConfig returns configuration populated from environment variables.
-func mustConfig() *config {
+// readConfig returns configuration populated from environment variables.
+func readConfig() (*config, error) {
 	cfg := &config{}
-	envconfig.MustProcess("", cfg)
-	return cfg
+	err := envconfig.Process("", cfg)
+	return cfg, err
 }

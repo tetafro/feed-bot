@@ -10,7 +10,6 @@ import (
 // config represents application configuration.
 type config struct {
 	TelegramToken  string        `envconfig:"TELEGRAM_TOKEN" required:"true"`
-	Feeds          []string      `envconfig:"FEEDS" required:"true"`
 	UpdateInterval time.Duration `envconfig:"UPDATE_INTERVAL" default:"1h"`
 }
 

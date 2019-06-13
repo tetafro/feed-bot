@@ -14,7 +14,7 @@ import (
 type Bot struct {
 	api *tg.BotAPI
 
-	feeds []Feed
+	feeds []*Feed
 
 	chats map[int64]struct{}
 	mx    *sync.Mutex
@@ -24,7 +24,7 @@ type Bot struct {
 }
 
 // NewBot creates new bot.
-func NewBot(token string, feeds []Feed) (*Bot, error) {
+func NewBot(token string, feeds ...*Feed) (*Bot, error) {
 	api, err := tg.NewBotAPI(token)
 	if err != nil {
 		return nil, errors.Wrap(err, "authorization")
@@ -32,7 +32,7 @@ func NewBot(token string, feeds []Feed) (*Bot, error) {
 
 	bot := &Bot{
 		api:   api,
-		feeds:  feeds,
+		feeds: feeds,
 		chats: map[int64]struct{}{},
 		mx:    &sync.Mutex{},
 		stop:  make(chan struct{}),
@@ -58,7 +58,7 @@ func (b *Bot) Start() error {
 	go b.processFeed()
 
 	for _, f := range b.feeds {
-	f.Start()
+		f.Start()
 	}
 
 	return nil
@@ -117,13 +117,6 @@ func (b *Bot) handleCommand(upd tg.Update) error {
 	case "stop":
 		text = "Stopped"
 		b.removeChat(chatID)
-	case "xkcd":
-		item, err := b.feeds[0].Last()
-		if err != nil {
-			text = "Service error, try again later"
-			break
-		}
-		text = item.String()
 	default:
 		text = "Unknown command"
 	}

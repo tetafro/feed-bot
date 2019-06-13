@@ -15,12 +15,12 @@ func main() {
 		log.Fatalf("Failed to read config: %v", err)
 	}
 
-	feeds := make([]Feed, len(cfg.Feeds))
-	for i, f := range cfg.Feeds {
-		feeds[i] = NewRSS(f, cfg.UpdateInterval)
-	}
-
-	bot, err := NewBot(cfg.TelegramToken, feeds)
+	bot, err := NewBot(
+		cfg.TelegramToken,
+		NewFeed(NewXKCDFetcher(), cfg.UpdateInterval),
+		NewFeed(NewCommitStripFetcher(), cfg.UpdateInterval),
+		NewFeed(NewExplosmFetcher(), cfg.UpdateInterval),
+	)
 	if err != nil {
 		log.Fatalf("Failed to init bot: %v", err)
 	}

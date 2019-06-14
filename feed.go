@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"sync"
 	"time"
@@ -12,10 +11,6 @@ type Item struct {
 	Published time.Time
 	Title     string
 	Image     string
-}
-
-func (it Item) String() string {
-	return fmt.Sprintf("%s\n%s", it.Title, it.Image)
 }
 
 // Feed works with data feeds..

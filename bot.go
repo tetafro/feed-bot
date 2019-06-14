@@ -96,7 +96,8 @@ func (b *Bot) processFeed() {
 
 	for item := range b.feed() {
 		for chat := range b.chats {
-			msg := tg.NewMessage(chat, item.String())
+			msg := tg.NewPhotoShare(chat, item.Image)
+			msg.Caption = item.Title
 			_, err := b.api.Send(msg)
 			if err != nil {
 				log.Printf("Failed to send message: %v", err)

@@ -81,7 +81,7 @@ func (testXKCDServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 				</summary>
 			</entry>
 		</feed>`
-	w.Write([]byte(xml))
+	w.Write([]byte(xml)) // nolint: errcheck
 }
 
 type testCommitStripServer struct{}
@@ -103,7 +103,7 @@ func (testCommitStripServer) ServeHTTP(w http.ResponseWriter, req *http.Request)
 				</item>
 			</channel>
 		</rss>`
-	w.Write([]byte(xml))
+	w.Write([]byte(xml)) // nolint: errcheck
 }
 
 type testExplosmServer struct{}
@@ -122,5 +122,5 @@ func (testExplosmServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 				</item>
 			</channel>
 		</rss>`
-	w.Write([]byte(xml))
+	w.Write([]byte(xml)) // nolint: errcheck
 }

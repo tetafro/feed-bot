@@ -21,17 +21,21 @@ const (
 
 // XKCDFetcher fetches items from https://xkcd.com/.
 type XKCDFetcher struct {
+	addr   string
 	parser *gofeed.Parser
 }
 
 // NewXKCDFetcher creates new XKCDFetcher.
 func NewXKCDFetcher() *XKCDFetcher {
-	return &XKCDFetcher{gofeed.NewParser()}
+	return &XKCDFetcher{
+		addr:   xkcdFeedAddr,
+		parser: gofeed.NewParser(),
+	}
 }
 
 // Fetch fetches last item from RSS feed.
 func (f *XKCDFetcher) Fetch() (Item, error) {
-	feed, err := f.parser.ParseURL(xkcdFeedAddr)
+	feed, err := f.parser.ParseURL(f.addr)
 	if err != nil {
 		return Item{}, errors.Wrap(err, "parse url")
 	}
@@ -57,17 +61,21 @@ func (f *XKCDFetcher) Fetch() (Item, error) {
 
 // CommitStripFetcher fetches items from https://commitstrip.com/.
 type CommitStripFetcher struct {
+	addr   string
 	parser *gofeed.Parser
 }
 
 // NewCommitStripFetcher creates new CommitStripFetcher.
 func NewCommitStripFetcher() *CommitStripFetcher {
-	return &CommitStripFetcher{parser: gofeed.NewParser()}
+	return &CommitStripFetcher{
+		addr:   commitstripFeedAddr,
+		parser: gofeed.NewParser(),
+	}
 }
 
 // Fetch fetches last item from RSS feed.
 func (f *CommitStripFetcher) Fetch() (Item, error) {
-	feed, err := f.parser.ParseURL(commitstripFeedAddr)
+	feed, err := f.parser.ParseURL(f.addr)
 	if err != nil {
 		return Item{}, errors.Wrap(err, "parse url")
 	}
@@ -93,17 +101,21 @@ func (f *CommitStripFetcher) Fetch() (Item, error) {
 
 // ExplosmFetcher fetches items from http://explosm.net/.
 type ExplosmFetcher struct {
+	addr   string
 	parser *gofeed.Parser
 }
 
 // NewExplosmFetcher creates new ExplosmFetcher.
 func NewExplosmFetcher() *ExplosmFetcher {
-	return &ExplosmFetcher{parser: gofeed.NewParser()}
+	return &ExplosmFetcher{
+		addr:   explosmFeedAddr,
+		parser: gofeed.NewParser(),
+	}
 }
 
 // Fetch fetches last item from RSS feed.
 func (f *ExplosmFetcher) Fetch() (Item, error) {
-	feed, err := f.parser.ParseURL(explosmFeedAddr)
+	feed, err := f.parser.ParseURL(f.addr)
 	if err != nil {
 		return Item{}, errors.Wrap(err, "parse url")
 	}

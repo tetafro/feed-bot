@@ -9,28 +9,33 @@ import (
 )
 
 // Bot is a telegram bot, that handles two commands: start and stop.
-// Starts commands makes bot send greeting message to user every 5 seconds.
+// Starts commands makes bot send feed updates to user.
 // Stop command stops sending messages.
 type Bot struct {
-	api *tg.BotAPI
+	// API for sending messages
+	api API
 
+	// Set of RSS feeds
 	feeds []*Feed
 
+	// List of connected users
 	chats map[int64]struct{}
 	mx    *sync.Mutex
 
+	// Graceful shutdown
 	stop chan struct{}
 	wg   *sync.WaitGroup
 }
 
-// NewBot creates new bot.
-func NewBot(token string, feeds ...*Feed) (*Bot, error) {
-	api, err := tg.NewBotAPI(token)
-	if err != nil {
-		return nil, errors.Wrap(err, "authorization")
-	}
+// API describes interface for working with remote API.
+type API interface {
+	GetUpdatesChan(tg.UpdateConfig) (tg.UpdatesChannel, error)
+	Send(tg.Chattable) (tg.Message, error)
+}
 
-	bot := &Bot{
+// NewBot creates new bot.
+func NewBot(api API, feeds ...*Feed) *Bot {
+	return &Bot{
 		api:   api,
 		feeds: feeds,
 		chats: map[int64]struct{}{},
@@ -38,8 +43,6 @@ func NewBot(token string, feeds ...*Feed) (*Bot, error) {
 		stop:  make(chan struct{}),
 		wg:    &sync.WaitGroup{},
 	}
-
-	return bot, nil
 }
 
 // Start starts listening for updates.

@@ -44,7 +44,7 @@ func TestFeed(t *testing.T) {
 		Image:     "https://example.com/0001.png",
 		Published: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
 	}
-	fetcher := &fetcherMock{item: item}
+	fetcher := &mockFetcher{item: item}
 
 	f := NewFeed(fetcher, 25*time.Millisecond)
 	go f.Start()
@@ -69,11 +69,11 @@ func TestFeed(t *testing.T) {
 	f.Stop()
 }
 
-type fetcherMock struct {
+type mockFetcher struct {
 	item Item
 	err  error
 }
 
-func (f *fetcherMock) Fetch() (Item, error) {
-	return f.item, f.err
+func (m *mockFetcher) Fetch() (Item, error) {
+	return m.item, m.err
 }

@@ -5,6 +5,8 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+
+	tg "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 func main() {
@@ -15,15 +17,17 @@ func main() {
 		log.Fatalf("Failed to read config: %v", err)
 	}
 
-	bot, err := NewBot(
-		cfg.TelegramToken,
+	api, err := tg.NewBotAPI(cfg.TelegramToken)
+	if err != nil {
+		log.Fatalf("Failed to init telegram API: %v", err)
+	}
+
+	bot := NewBot(
+		api,
 		NewFeed(NewXKCDFetcher(), cfg.UpdateInterval),
 		NewFeed(NewCommitStripFetcher(), cfg.UpdateInterval),
 		NewFeed(NewExplosmFetcher(), cfg.UpdateInterval),
 	)
-	if err != nil {
-		log.Fatalf("Failed to init bot: %v", err)
-	}
 
 	if err := bot.Start(); err != nil {
 		log.Fatalf("Failed to start bot: %v", err)

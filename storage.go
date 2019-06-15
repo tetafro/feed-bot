@@ -24,10 +24,8 @@ type FileStorage struct {
 func NewFileStorage(file string) (*FileStorage, error) {
 	fs := &FileStorage{file: file}
 
-	f, err := os.Create(fs.file)
-	if os.IsExist(err) {
-		return fs, nil
-	} else if err != nil {
+	f, err := os.OpenFile(fs.file, os.O_CREATE, 0600)
+	if err != nil {
 		return nil, errors.Wrap(err, "create file")
 	}
 	f.Close()

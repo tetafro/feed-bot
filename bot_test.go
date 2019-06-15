@@ -1,6 +1,7 @@
 package main
 
 import (
+	"sort"
 	"testing"
 
 	tg "github.com/go-telegram-bot-api/telegram-bot-api"
@@ -46,7 +47,11 @@ func TestMapToSlice(t *testing.T) {
 	for _, tt := range testCases {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.s, mapToSlice(tt.m))
+			s := mapToSlice(tt.m)
+			sort.Slice(s, func(i, j int) bool {
+				return s[i] < s[j]
+			})
+			assert.Equal(t, tt.s, s)
 		})
 	}
 }

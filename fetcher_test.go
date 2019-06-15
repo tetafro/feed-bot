@@ -63,6 +63,24 @@ func TestExplosmFetcher(t *testing.T) {
 	assert.Equal(t, expected, item)
 }
 
+func TestSMBCFetcher(t *testing.T) {
+	server := httptest.NewServer(testSMBCServer{})
+	defer server.Close()
+
+	f := NewSMBCFetcher()
+	f.addr = server.URL
+
+	item, err := f.Fetch()
+	assert.NoError(t, err)
+
+	expected := Item{
+		Title:     "Title",
+		Image:     "https://example.com/0001.png",
+		Published: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
+	}
+	assert.Equal(t, expected, item)
+}
+
 type testXKCDServer struct{}
 
 func (testXKCDServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
@@ -118,6 +136,29 @@ func (testExplosmServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 					<title>Title</title>
 					<link>http://example.com/0001/</link>
 					<description><img src="//example.com/0001.png"></description>
+					<pubDate>Sat, 01 Jan 2000 00:00:00 +0000</pubDate>
+				</item>
+			</channel>
+		</rss>`
+	w.Write([]byte(xml)) // nolint: errcheck
+}
+
+type testSMBCServer struct{}
+
+func (testSMBCServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	xml := `<rss version="2.0">
+			<channel>
+				<title>Saturday Morning Breakfast Cereal</title>
+				<atom:link href="https://example.com"/>
+				<link>https://example.com/</link>
+				<item>
+					<title>Title</title>
+					<description>
+						<a href="https://example.com/0001">
+						<img src="https://example.com/0001.png"/>
+						</a>
+					</description>
+					<link>https://example.com/0001</link>
 					<pubDate>Sat, 01 Jan 2000 00:00:00 +0000</pubDate>
 				</item>
 			</channel>

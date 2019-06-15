@@ -17,6 +17,7 @@ const (
 	xkcdFeedAddr        = "https://xkcd.com/atom.xml"
 	commitstripFeedAddr = "http://www.commitstrip.com/en/feed/"
 	explosmFeedAddr     = "http://explosm-feed.antonymale.co.uk/comics_feed"
+	smbcFeedAddr        = "https://www.smbc-comics.com/comic/rss"
 )
 
 // XKCDFetcher fetches items from https://xkcd.com/.
@@ -127,6 +128,46 @@ func (f *ExplosmFetcher) Fetch() (Item, error) {
 	item := Item{
 		Title:     last.Title,
 		Image:     "https:" + getImage(last.Description),
+		Published: time.Now(),
+	}
+	if last.PublishedParsed != nil {
+		item.Published = *last.PublishedParsed
+	}
+	if last.UpdatedParsed != nil {
+		item.Published = *last.UpdatedParsed
+	}
+
+	return item, nil
+}
+
+// SMBCFetcher fetches items from https://smbc-comics.com/.
+type SMBCFetcher struct {
+	addr   string
+	parser *gofeed.Parser
+}
+
+// NewSMBCFetcher creates new SMBCFetcher.
+func NewSMBCFetcher() *SMBCFetcher {
+	return &SMBCFetcher{
+		addr:   smbcFeedAddr,
+		parser: gofeed.NewParser(),
+	}
+}
+
+// Fetch fetches last item from RSS feed.
+func (f *SMBCFetcher) Fetch() (Item, error) {
+	feed, err := f.parser.ParseURL(f.addr)
+	if err != nil {
+		return Item{}, errors.Wrap(err, "parse url")
+	}
+	if len(feed.Items) == 0 {
+		return Item{}, errors.New("empty feed")
+	}
+	last := feed.Items[0]
+
+	item := Item{
+		Title:     last.Title,
+		Image:     getImage(last.Description),
 		Published: time.Now(),
 	}
 	if last.PublishedParsed != nil {

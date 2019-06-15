@@ -1,5 +1,6 @@
 # FEED-BOT
 
+[![CircleCI](https://circleci.com/gh/tetafro/feed-bot.svg?style=shield)](https://circleci.com/gh/tetafro/feed-bot)
 [![Go Report](https://goreportcard.com/badge/github.com/tetafro/feed-bot)](https://goreportcard.com/report/github.com/tetafro/feed-bot)
 
 Example project to learn Telegram Bot API. This bot sends RSS feeds

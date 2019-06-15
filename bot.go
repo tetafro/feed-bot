@@ -57,6 +57,8 @@ func NewBot(api API, st Storage, feeds ...*Feed) (*Bot, error) {
 		return bot, nil
 	}
 
+	log.Printf("Currently connected users: %d", len(chatIDs))
+
 	for _, id := range chatIDs {
 		bot.chats[id] = struct{}{}
 	}

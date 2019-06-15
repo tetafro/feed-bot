@@ -27,12 +27,13 @@ func main() {
 		log.Fatalf("Failed to init file storage: %v", err)
 	}
 
-	bot, err := NewBot(
-		api, fs,
-		NewFeed(NewXKCDFetcher(), cfg.UpdateInterval),
-		NewFeed(NewCommitStripFetcher(), cfg.UpdateInterval),
-		NewFeed(NewExplosmFetcher(), cfg.UpdateInterval),
-	)
+	feeds := make([]*Feed, len(cfg.Feeds))
+	i := 0
+	for _, url := range cfg.Feeds {
+		feeds[i] = NewFeed(NewRSSFetcher(url), cfg.UpdateInterval)
+		i++
+	}
+	bot, err := NewBot(api, fs, feeds...)
 	if err != nil {
 		log.Fatalf("Failed to init bot: %v", err)
 	}

@@ -11,6 +11,7 @@ import (
 type config struct {
 	TelegramToken  string        `envconfig:"TELEGRAM_TOKEN" required:"true"`
 	UpdateInterval time.Duration `envconfig:"UPDATE_INTERVAL" default:"1h"`
+	DataFile       string        `envconfig:"DATA_FILE" default:"data.csv"`
 }
 
 // readConfig returns configuration populated from environment variables.

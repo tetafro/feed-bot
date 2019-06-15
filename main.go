@@ -22,12 +22,20 @@ func main() {
 		log.Fatalf("Failed to init telegram API: %v", err)
 	}
 
-	bot := NewBot(
-		api,
+	fs, err := NewFileStorage(cfg.DataFile)
+	if err != nil {
+		log.Fatalf("Failed to init file storage: %v", err)
+	}
+
+	bot, err := NewBot(
+		api, fs,
 		NewFeed(NewXKCDFetcher(), cfg.UpdateInterval),
 		NewFeed(NewCommitStripFetcher(), cfg.UpdateInterval),
 		NewFeed(NewExplosmFetcher(), cfg.UpdateInterval),
 	)
+	if err != nil {
+		log.Fatalf("Failed to init bot: %v", err)
+	}
 
 	if err := bot.Start(); err != nil {
 		log.Fatalf("Failed to start bot: %v", err)

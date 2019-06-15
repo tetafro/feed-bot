@@ -22,6 +22,9 @@ type Bot struct {
 	chats map[int64]struct{}
 	mx    *sync.Mutex
 
+	// Storage for current chats data
+	storage Storage
+
 	// Graceful shutdown
 	stop chan struct{}
 	wg   *sync.WaitGroup
@@ -34,15 +37,30 @@ type API interface {
 }
 
 // NewBot creates new bot.
-func NewBot(api API, feeds ...*Feed) *Bot {
-	return &Bot{
-		api:   api,
-		feeds: feeds,
-		chats: map[int64]struct{}{},
-		mx:    &sync.Mutex{},
-		stop:  make(chan struct{}),
-		wg:    &sync.WaitGroup{},
+func NewBot(api API, st Storage, feeds ...*Feed) (*Bot, error) {
+	bot := &Bot{
+		api:     api,
+		feeds:   feeds,
+		chats:   map[int64]struct{}{},
+		mx:      &sync.Mutex{},
+		storage: st,
+		stop:    make(chan struct{}),
+		wg:      &sync.WaitGroup{},
 	}
+
+	chatIDs, err := st.Get()
+	if err != nil {
+		return nil, errors.Wrap(err, "get chats data")
+	}
+	if len(chatIDs) == 0 {
+		log.Print("No chats data")
+		return bot, nil
+	}
+
+	for _, id := range chatIDs {
+		bot.chats[id] = struct{}{}
+	}
+	return bot, nil
 }
 
 // Start starts listening for updates.
@@ -135,6 +153,10 @@ func (b *Bot) addChat(id int64) {
 	defer b.mx.Unlock()
 
 	b.chats[id] = struct{}{}
+
+	if err := b.storage.Save(mapToSlice(b.chats)); err != nil {
+		log.Printf("Failed to save chats data: %v", err)
+	}
 }
 
 func (b *Bot) removeChat(id int64) {
@@ -142,6 +164,10 @@ func (b *Bot) removeChat(id int64) {
 	defer b.mx.Unlock()
 
 	delete(b.chats, id)
+
+	if err := b.storage.Save(mapToSlice(b.chats)); err != nil {
+		log.Printf("Failed to save chats data: %v", err)
+	}
 }
 
 // feed merges all feeds into one channel.
@@ -165,4 +191,17 @@ func (b *Bot) feed() <-chan Item {
 	}()
 
 	return all
+}
+
+func mapToSlice(m map[int64]struct{}) []int64 {
+	if m == nil {
+		return nil
+	}
+	nn := make([]int64, len(m))
+	i := 0
+	for n := range m {
+		nn[i] = n
+		i++
+	}
+	return nn
 }

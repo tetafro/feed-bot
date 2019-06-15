@@ -46,6 +46,19 @@ jobs:
       - run:
           name: Run linters
           command: golangci-lint run
+  codecov:
+    docker:
+      - image: circleci/golang:1.12
+        environment:
+          GO111MODULE: "on"
+    working_directory: /go/src/github.com/tetafro/feed-bot
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - gomod-cache-{{ checksum "go.sum" }}
+      - run: ./.circleci/codecov.sh
+      - run: bash <(curl -s https://codecov.io/bash)
 workflows:
   version: 2
   main:
@@ -57,3 +70,7 @@ workflows:
       - lint:
           requires:
             - dep
+      - codecov:
+          requires:
+            - dep
+            - test

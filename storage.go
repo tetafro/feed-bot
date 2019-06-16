@@ -4,29 +4,41 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"os"
+	"sync"
+	"time"
 
 	"github.com/pkg/errors"
 )
 
 // Storage describes persistent datastorage.
 type Storage interface {
-	GetChats() ([]int64, error)
-	SaveChats([]int64) error
+	GetChats() (ids []int64, err error)
+	SaveChats(ids []int64) error
+	GetLastUpdate(feed string) (time.Time, error)
+	SaveLastUpdate(feed string, t time.Time) error
 }
 
 // FileStorage is a storage that uses plain text file for storing data.
 type FileStorage struct {
 	file string
+	mx   *sync.Mutex
 }
 
 // NewFileStorage creates new file storage.
 func NewFileStorage(file string) (*FileStorage, error) {
-	fs := &FileStorage{file: file}
+	fs := &FileStorage{
+		file: file,
+		mx:   &sync.Mutex{},
+	}
 
 	_, err := os.Stat(fs.file)
 	if os.IsNotExist(err) {
 		// Init file with empty struct
-		b, err := json.MarshalIndent(fileStorageData{}, "", "  ")
+		data := fileStorageData{
+			Chats: []int64{},
+			Feeds: map[string]time.Time{},
+		}
+		b, err := json.MarshalIndent(data, "", "  ")
 		if err != nil {
 			return nil, errors.Wrap(err, "encode init data")
 		}
@@ -40,7 +52,7 @@ func NewFileStorage(file string) (*FileStorage, error) {
 	return fs, nil
 }
 
-// GetChats gets list of chat IDs from file.
+// GetChats gets list of chat IDs.
 func (s *FileStorage) GetChats() ([]int64, error) {
 	data, err := s.read()
 	if err != nil {
@@ -49,13 +61,39 @@ func (s *FileStorage) GetChats() ([]int64, error) {
 	return data.Chats, nil
 }
 
-// SaveChats saves list of chat IDs to file.
+// SaveChats saves list of chat IDs.
 func (s *FileStorage) SaveChats(chats []int64) error {
 	data, err := s.read()
 	if err != nil {
 		return errors.Wrap(err, "read data")
 	}
 	data.Chats = chats
+	if err = s.save(data); err != nil {
+		return errors.Wrap(err, "save data")
+	}
+	return nil
+}
+
+// GetLastUpdate gets last update time of the feed.
+func (s *FileStorage) GetLastUpdate(feed string) (time.Time, error) {
+	data, err := s.read()
+	if err != nil {
+		return time.Time{}, errors.Wrap(err, "read data")
+	}
+	t, ok := data.Feeds[feed]
+	if !ok {
+		return time.Time{}, nil
+	}
+	return t, nil
+}
+
+// SaveLastUpdate saves last feed update.
+func (s *FileStorage) SaveLastUpdate(feed string, t time.Time) error {
+	data, err := s.read()
+	if err != nil {
+		return errors.Wrap(err, "read data")
+	}
+	data.Feeds[feed] = t
 	if err = s.save(data); err != nil {
 		return errors.Wrap(err, "save data")
 	}
@@ -79,6 +117,9 @@ func (s *FileStorage) read() (fileStorageData, error) {
 
 // save rewrites whole data file.
 func (s *FileStorage) save(data fileStorageData) error {
+	s.mx.Lock()
+	defer s.mx.Unlock()
+
 	b, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
 		return errors.Wrap(err, "encode data")
@@ -92,5 +133,6 @@ func (s *FileStorage) save(data fileStorageData) error {
 
 // fileStorageData is an internal representation of data in the file.
 type fileStorageData struct {
-	Chats []int64 `json:"chats"`
+	Chats []int64              `json:"chats"`
+	Feeds map[string]time.Time `json:"feeds"`
 }

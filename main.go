@@ -30,9 +30,10 @@ func main() {
 	feeds := make([]*Feed, len(cfg.Feeds))
 	i := 0
 	for _, url := range cfg.Feeds {
-		feeds[i] = NewFeed(NewRSSFetcher(url), cfg.UpdateInterval)
+		feeds[i] = NewFeed(fs, url, NewRSSFetcher(), cfg.UpdateInterval)
 		i++
 	}
+
 	bot, err := NewBot(api, fs, feeds...)
 	if err != nil {
 		log.Fatalf("Failed to init bot: %v", err)

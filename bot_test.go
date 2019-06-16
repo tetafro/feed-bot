@@ -65,13 +65,3 @@ func (m *mockAPI) GetUpdatesChan(tg.UpdateConfig) (tg.UpdatesChannel, error) {
 func (m *mockAPI) Send(tg.Chattable) (tg.Message, error) {
 	return tg.Message{}, nil
 }
-
-type mockStorage struct{}
-
-func (m *mockStorage) GetChats() ([]int64, error) {
-	return []int64{1, 2, 3}, nil
-}
-
-func (m *mockStorage) SaveChats([]int64) error {
-	return nil
-}

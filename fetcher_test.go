@@ -15,9 +15,9 @@ func TestRSSFetcher(t *testing.T) {
 	server := httptest.NewServer(testServer{})
 	defer server.Close()
 
-	f := NewRSSFetcher(server.URL)
+	f := NewRSSFetcher()
 
-	item, err := f.Fetch()
+	item, err := f.Fetch(server.URL)
 	assert.NoError(t, err)
 
 	expected := Item{

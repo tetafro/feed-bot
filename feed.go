@@ -8,10 +8,11 @@ import (
 
 // Feed works with data feeds..
 type Feed struct {
+	url      string
 	fetcher  Fetcher
 	feed     chan Item
 	interval time.Duration
-	last     time.Time
+	storage  Storage
 
 	stop chan struct{}
 	wg   *sync.WaitGroup
@@ -25,11 +26,13 @@ type Item struct {
 }
 
 // NewFeed returns new feed.
-func NewFeed(f Fetcher, interval time.Duration) *Feed {
+func NewFeed(s Storage, url string, f Fetcher, interval time.Duration) *Feed {
 	return &Feed{
+		url:      url,
 		fetcher:  f,
 		feed:     make(chan Item),
 		interval: interval,
+		storage:  s,
 		stop:     make(chan struct{}),
 		wg:       &sync.WaitGroup{},
 	}
@@ -49,16 +52,25 @@ func (f *Feed) Start() {
 		for {
 			select {
 			case <-t.C:
-				item, err := f.fetcher.Fetch()
+				item, err := f.fetcher.Fetch(f.url)
 				if err != nil {
 					log.Printf("Failed to fetch item: %v", err)
 				}
-				if !item.Published.After(f.last) {
+
+				last, err := f.storage.GetLastUpdate(f.url)
+				if err != nil {
+					log.Printf("Failed to get last update time: %v", err)
+					continue
+				}
+
+				if !item.Published.After(last) {
 					continue
 				}
 
 				f.feed <- item
-				f.last = item.Published
+				if err := f.storage.SaveLastUpdate(f.url, time.Now().UTC()); err != nil {
+					log.Printf("Failed to save last update time: %v", err)
+				}
 			case <-f.stop:
 				return
 			}

@@ -11,26 +11,24 @@ import (
 
 // Fetcher fetches items from the storage.
 type Fetcher interface {
-	Fetch() (Item, error)
+	Fetch(url string) (Item, error)
 }
 
 // RSSFetcher fetches items from RSS feed.
 type RSSFetcher struct {
-	addr   string
 	parser *gofeed.Parser
 }
 
 // NewRSSFetcher creates new RSSFetcher.
-func NewRSSFetcher(addr string) *RSSFetcher {
+func NewRSSFetcher() *RSSFetcher {
 	return &RSSFetcher{
-		addr:   addr,
 		parser: gofeed.NewParser(),
 	}
 }
 
 // Fetch fetches last item from RSS feed.
-func (f *RSSFetcher) Fetch() (Item, error) {
-	feed, err := f.parser.ParseURL(f.addr)
+func (f *RSSFetcher) Fetch(url string) (Item, error) {
+	feed, err := f.parser.ParseURL(url)
 	if err != nil {
 		return Item{}, errors.Wrap(err, "parse url")
 	}

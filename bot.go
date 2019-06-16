@@ -119,12 +119,8 @@ func (b *Bot) processFeed() {
 
 	for item := range b.feed() {
 		for chat := range b.chats {
-			msg := tg.NewPhotoShare(chat, item.Image)
-			msg.Caption = item.Title
-			_, err := b.api.Send(msg)
-			if err != nil {
-				log.Printf("Failed to send message: %v", err)
-			}
+			b.wg.Add(1)
+			go b.send(chat, item)
 		}
 	}
 }
@@ -193,6 +189,17 @@ func (b *Bot) feed() <-chan Item {
 	}()
 
 	return all
+}
+
+func (b *Bot) send(chat int64, item Item) {
+	defer b.wg.Done()
+
+	msg := tg.NewPhotoShare(chat, item.Image)
+	msg.Caption = item.Title
+	_, err := b.api.Send(msg)
+	if err != nil {
+		log.Printf("Failed to send message: %v", err)
+	}
 }
 
 func mapToSlice(m map[int64]struct{}) []int64 {

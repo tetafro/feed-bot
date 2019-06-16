@@ -49,28 +49,11 @@ func (f *Feed) Start() {
 		t := time.NewTicker(f.interval)
 		defer t.Stop()
 
+		f.fetch() // instant first fetch
 		for {
 			select {
 			case <-t.C:
-				item, err := f.fetcher.Fetch(f.url)
-				if err != nil {
-					log.Printf("Failed to fetch item: %v", err)
-				}
-
-				last, err := f.storage.GetLastUpdate(f.url)
-				if err != nil {
-					log.Printf("Failed to get last update time: %v", err)
-					continue
-				}
-
-				if !item.Published.After(last) {
-					continue
-				}
-
-				f.feed <- item
-				if err := f.storage.SaveLastUpdate(f.url, time.Now().UTC()); err != nil {
-					log.Printf("Failed to save last update time: %v", err)
-				}
+				f.fetch()
 			case <-f.stop:
 				return
 			}
@@ -87,4 +70,27 @@ func (f *Feed) Stop() {
 // Feed periodically checks for updates and sends them to channel.
 func (f *Feed) Feed() <-chan Item {
 	return f.feed
+}
+
+func (f *Feed) fetch() {
+	item, err := f.fetcher.Fetch(f.url)
+	if err != nil {
+		log.Printf("Failed to fetch item: %v", err)
+	}
+
+	last, err := f.storage.GetLastUpdate(f.url)
+	if err != nil {
+		log.Printf("Failed to get last update time: %v", err)
+		return
+	}
+
+	// Item is not new
+	if !item.Published.After(last) {
+		return
+	}
+
+	f.feed <- item
+	if err := f.storage.SaveLastUpdate(f.url, time.Now().UTC()); err != nil {
+		log.Printf("Failed to save last update time: %v", err)
+	}
 }

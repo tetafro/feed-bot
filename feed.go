@@ -6,13 +6,6 @@ import (
 	"time"
 )
 
-// Item is a single fetched item.
-type Item struct {
-	Published time.Time
-	Title     string
-	Image     string
-}
-
 // Feed works with data feeds..
 type Feed struct {
 	fetcher  Fetcher
@@ -22,6 +15,13 @@ type Feed struct {
 
 	stop chan struct{}
 	wg   *sync.WaitGroup
+}
+
+// Item is a single fetched item.
+type Item struct {
+	Published time.Time
+	Title     string
+	Image     string
 }
 
 // NewFeed returns new feed.

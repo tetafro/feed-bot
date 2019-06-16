@@ -44,8 +44,6 @@ func (f *RSSFetcher) Fetch() (Item, error) {
 	return item, nil
 }
 
-var regexpImageSrc = regexp.MustCompile(`src="([^\s]+)"`)
-
 func parse(in *gofeed.Item) Item {
 	item := Item{
 		Title:     in.Title,
@@ -81,3 +79,5 @@ func parse(in *gofeed.Item) Item {
 
 	return item
 }
+
+var regexpImageSrc = regexp.MustCompile(`src="([^\s]+)"`)

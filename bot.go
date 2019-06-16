@@ -48,7 +48,7 @@ func NewBot(api API, st Storage, feeds ...*Feed) (*Bot, error) {
 		wg:      &sync.WaitGroup{},
 	}
 
-	chatIDs, err := st.Get()
+	chatIDs, err := st.GetChats()
 	if err != nil {
 		return nil, errors.Wrap(err, "get chats data")
 	}
@@ -156,7 +156,7 @@ func (b *Bot) addChat(id int64) {
 
 	b.chats[id] = struct{}{}
 
-	if err := b.storage.Save(mapToSlice(b.chats)); err != nil {
+	if err := b.storage.SaveChats(mapToSlice(b.chats)); err != nil {
 		log.Printf("Failed to save chats data: %v", err)
 	}
 }
@@ -167,7 +167,7 @@ func (b *Bot) removeChat(id int64) {
 
 	delete(b.chats, id)
 
-	if err := b.storage.Save(mapToSlice(b.chats)); err != nil {
+	if err := b.storage.SaveChats(mapToSlice(b.chats)); err != nil {
 		log.Printf("Failed to save chats data: %v", err)
 	}
 }

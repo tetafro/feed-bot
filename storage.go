@@ -1,18 +1,17 @@
 package main
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"os"
-	"strconv"
-	"strings"
 
 	"github.com/pkg/errors"
 )
 
 // Storage describes persistent datastorage.
 type Storage interface {
-	Get() ([]int64, error)
-	Save([]int64) error
+	GetChats() ([]int64, error)
+	SaveChats([]int64) error
 }
 
 // FileStorage is a storage that uses plain text file for storing data.
@@ -24,46 +23,74 @@ type FileStorage struct {
 func NewFileStorage(file string) (*FileStorage, error) {
 	fs := &FileStorage{file: file}
 
-	f, err := os.OpenFile(fs.file, os.O_CREATE, 0600)
-	if err != nil {
-		return nil, errors.Wrap(err, "create file")
+	_, err := os.Stat(fs.file)
+	if os.IsNotExist(err) {
+		// Init file with empty struct
+		b, err := json.MarshalIndent(fileStorageData{}, "", "  ")
+		if err != nil {
+			return nil, errors.Wrap(err, "encode init data")
+		}
+		if err := ioutil.WriteFile(fs.file, b, 0600); err != nil {
+			return nil, errors.Wrap(err, "init data file")
+		}
+	} else if err != nil {
+		return nil, errors.Wrap(err, "check data file")
 	}
-	f.Close()
 
 	return fs, nil
 }
 
-// Get gets list of numbers from file with comma-separated data.
-func (s *FileStorage) Get() ([]int64, error) {
-	b, err := ioutil.ReadFile(s.file)
+// GetChats gets list of chat IDs from file.
+func (s *FileStorage) GetChats() ([]int64, error) {
+	data, err := s.read()
 	if err != nil {
-		return nil, errors.Wrap(err, "read file")
+		return nil, errors.Wrap(err, "read data")
 	}
-	if len(b) == 0 {
-		return nil, nil
-	}
-
-	// Parse comma-separated numbers
-	var nums []int64
-	for _, str := range strings.Split(string(b), ",") {
-		n, err := strconv.Atoi(str)
-		if err != nil {
-			return nil, errors.Wrap(err, "convert to integer")
-		}
-		nums = append(nums, int64(n))
-	}
-
-	return nums, nil
+	return data.Chats, nil
 }
 
-// Save saves list of numbers in comma-separated format to file.
-func (s *FileStorage) Save(nums []int64) error {
-	var str string
-	if len(nums) > 0 {
-		for _, n := range nums {
-			str += strconv.Itoa(int(n)) + ","
-		}
-		str = str[:len(str)-1]
+// SaveChats saves list of chat IDs to file.
+func (s *FileStorage) SaveChats(chats []int64) error {
+	data, err := s.read()
+	if err != nil {
+		return errors.Wrap(err, "read data")
 	}
-	return ioutil.WriteFile(s.file, []byte(str), 0600)
+	data.Chats = chats
+	if err = s.save(data); err != nil {
+		return errors.Wrap(err, "save data")
+	}
+	return nil
+}
+
+// read reads and parses whole data file.
+func (s *FileStorage) read() (fileStorageData, error) {
+	b, err := ioutil.ReadFile(s.file)
+	if err != nil {
+		return fileStorageData{}, errors.Wrap(err, "read file")
+	}
+
+	var data fileStorageData
+	if err = json.Unmarshal(b, &data); err != nil {
+		return fileStorageData{}, errors.Wrap(err, "decode data")
+	}
+
+	return data, nil
+}
+
+// save rewrites whole data file.
+func (s *FileStorage) save(data fileStorageData) error {
+	b, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		return errors.Wrap(err, "encode data")
+	}
+	err = ioutil.WriteFile(s.file, b, 0600)
+	if err != nil {
+		return errors.Wrap(err, "write data to file")
+	}
+	return nil
+}
+
+// fileStorageData is an internal representation of data in the file.
+type fileStorageData struct {
+	Chats []int64 `json:"chats"`
 }

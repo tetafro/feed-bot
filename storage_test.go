@@ -31,55 +31,60 @@ func TestNewFileStorage(t *testing.T) {
 	assert.NotNil(t, fs2)
 }
 
-func TestFileStorage_Save(t *testing.T) {
-	f, err := ioutil.TempFile("", "")
+func TestFileStorage_SaveChats(t *testing.T) {
+	f := filepath.Join(
+		os.TempDir(),
+		fmt.Sprintf("feed-bot-testing-%d", time.Now().Nanosecond()),
+	)
+	defer os.Remove(f)
+
+	fs, err := NewFileStorage(f)
 	assert.NoError(t, err)
-	f.Close()
-	defer os.Remove(f.Name())
 
-	fs := FileStorage{file: f.Name()}
-
-	err = fs.Save([]int64{1, 2, 3})
+	err = fs.SaveChats([]int64{1, 2, 3})
 	assert.NoError(t, err)
 
 	b, err := ioutil.ReadFile(fs.file)
 	assert.NoError(t, err)
-	assert.Equal(t, "1,2,3", string(b))
+	assert.Equal(t, "{\n  \"chats\": [\n    1,\n    2,\n    3\n  ]\n}", string(b))
 }
 
-func TestFileStorage_Get(t *testing.T) {
-	f, err := ioutil.TempFile("", "")
-	assert.NoError(t, err)
-	f.Close()
-	defer os.Remove(f.Name())
+func TestFileStorage_GetChats(t *testing.T) {
+	f := filepath.Join(
+		os.TempDir(),
+		fmt.Sprintf("feed-bot-testing-%d", time.Now().Nanosecond()),
+	)
+	defer os.Remove(f)
 
 	t.Run("valid data", func(t *testing.T) {
-		err = ioutil.WriteFile(f.Name(), []byte("1,2,3"), 0666)
+		err := ioutil.WriteFile(f, []byte("{\n  \"chats\": [\n    1,\n    2,\n    3\n  ]\n}"), 0600)
 		assert.NoError(t, err)
 
-		fs := FileStorage{file: f.Name()}
+		fs, err := NewFileStorage(f)
+		assert.NoError(t, err)
 
-		nn, err := fs.Get()
+		nn, err := fs.GetChats()
 		assert.NoError(t, err)
 		assert.Equal(t, []int64{1, 2, 3}, nn)
 	})
 	t.Run("invalid data", func(t *testing.T) {
-		err = ioutil.WriteFile(f.Name(), []byte("1,a,3"), 0666)
+		err := ioutil.WriteFile(f, []byte("1,a,3"), 0600)
 		assert.NoError(t, err)
 
-		fs := FileStorage{file: f.Name()}
+		fs, err := NewFileStorage(f)
+		assert.NoError(t, err)
 
-		_, err := fs.Get()
+		_, err = fs.GetChats()
 		assert.Error(t, err)
 	})
 	t.Run("empty file", func(t *testing.T) {
-		err = ioutil.WriteFile(f.Name(), []byte(""), 0666)
+		err := ioutil.WriteFile(f, []byte(""), 0600)
 		assert.NoError(t, err)
 
-		fs := FileStorage{file: f.Name()}
-
-		nn, err := fs.Get()
+		fs, err := NewFileStorage(f)
 		assert.NoError(t, err)
-		assert.Nil(t, nn)
+
+		_, err = fs.GetChats()
+		assert.Error(t, err)
 	})
 }

@@ -28,7 +28,7 @@ jobs:
             - gomod-cache-{{ checksum "go.sum" }}
       - run:
           name: Run tests
-          command: go test ./...
+          command: go test -race ./...
   lint:
     docker:
       - image: circleci/golang:1.12

@@ -18,9 +18,8 @@ func TestFeed(t *testing.T) {
 		st := &mockStorage{}
 
 		f := NewFeed(st, "http://example.com", fetcher, 25*time.Millisecond)
-		go f.Start()
+		f.Start()
 
-		// Check with old item
 		timer := time.NewTimer(50 * time.Millisecond)
 		select {
 		case <-timer.C:
@@ -29,6 +28,7 @@ func TestFeed(t *testing.T) {
 			assert.Equal(t, item, got)
 		}
 
+		timer.Stop()
 		f.Stop()
 	})
 	t.Run("fetch old item", func(t *testing.T) {
@@ -41,9 +41,8 @@ func TestFeed(t *testing.T) {
 		st := &mockStorage{}
 
 		f := NewFeed(st, "http://example.com", fetcher, 25*time.Millisecond)
-		go f.Start()
+		f.Start()
 
-		// Check with old item
 		timer := time.NewTimer(50 * time.Millisecond)
 		select {
 		case <-f.Feed():
@@ -51,6 +50,7 @@ func TestFeed(t *testing.T) {
 		case <-timer.C:
 		}
 
+		timer.Stop()
 		f.Stop()
 	})
 }

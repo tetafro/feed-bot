@@ -21,4 +21,4 @@ RUN apk add --no-cache ca-certificates && \
 
 USER feed-bot
 
-CMD ["/app/feed-bot"]
+ENTRYPOINT ["/app/feed-bot"]

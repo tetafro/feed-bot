@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"os"
 	"os/signal"
@@ -9,12 +10,14 @@ import (
 	tg "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
-const configFile = "./config.json"
+var configFile = flag.String("f", "./config.json", "path to config file")
 
 func main() {
+	flag.Parse()
+
 	log.Print("Starting...")
 
-	cfg, err := readConfig(configFile)
+	cfg, err := readConfig(*configFile)
 	if err != nil {
 		log.Fatalf("Failed to read config: %v", err)
 	}

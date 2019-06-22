@@ -9,10 +9,12 @@ import (
 	tg "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
+const configFile = "./config.json"
+
 func main() {
 	log.Print("Starting...")
 
-	cfg, err := readConfig()
+	cfg, err := readConfig(configFile)
 	if err != nil {
 		log.Fatalf("Failed to read config: %v", err)
 	}

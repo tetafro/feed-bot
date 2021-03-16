@@ -1,6 +1,6 @@
-.PHONY: test
+.PHONY: dep
 dep:
-	@ go mod vendor
+	@ go mod tidy && go mod verify && go mod vendor
 
 .PHONY: test
 test:
@@ -15,7 +15,7 @@ cover:
 
 .PHONY: lint
 lint:
-	@ golangci-lint run
+	@ golangci-lint run --fix
 
 .PHONY: build
 build:

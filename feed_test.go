@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"sync"
 	"testing"
 	"time"
 
@@ -8,7 +10,11 @@ import (
 )
 
 func TestFeed(t *testing.T) {
+	ctx := context.Background()
+
 	t.Run("fetch new item", func(t *testing.T) {
+		ctx, cancel := context.WithCancel(ctx)
+
 		item := Item{
 			Title:     "Title",
 			Image:     "https://example.com/0001.png",
@@ -18,9 +24,17 @@ func TestFeed(t *testing.T) {
 		st := &mockStorage{}
 
 		f := NewFeed(st, "http://example.com", fetcher, 25*time.Millisecond)
-		f.Start()
+
+		var wg sync.WaitGroup
+		wg.Add(1)
+		go func() {
+			f.Run(ctx)
+			wg.Done()
+		}()
 
 		timer := time.NewTimer(50 * time.Millisecond)
+		defer timer.Stop()
+
 		select {
 		case <-timer.C:
 			t.Fatal("Got no item")
@@ -28,10 +42,12 @@ func TestFeed(t *testing.T) {
 			assert.Equal(t, item, got)
 		}
 
-		timer.Stop()
-		f.Stop()
+		cancel()
+		wg.Wait()
 	})
 	t.Run("fetch old item", func(t *testing.T) {
+		ctx, cancel := context.WithCancel(ctx)
+
 		item := Item{
 			Title:     "Title",
 			Image:     "https://example.com/0001.png",
@@ -41,17 +57,25 @@ func TestFeed(t *testing.T) {
 		st := &mockStorage{}
 
 		f := NewFeed(st, "http://example.com", fetcher, 25*time.Millisecond)
-		f.Start()
+
+		var wg sync.WaitGroup
+		wg.Add(1)
+		go func() {
+			f.Run(ctx)
+			wg.Done()
+		}()
 
 		timer := time.NewTimer(50 * time.Millisecond)
+		defer timer.Stop()
+
 		select {
 		case <-f.Feed():
 			t.Fatal("Got unexpected item")
 		case <-timer.C:
 		}
 
-		timer.Stop()
-		f.Stop()
+		cancel()
+		wg.Wait()
 	})
 }
 

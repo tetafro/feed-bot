@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"sync"
 
@@ -24,10 +25,6 @@ type Bot struct {
 
 	// Storage for current chats data
 	storage Storage
-
-	// Graceful shutdown
-	stop chan struct{}
-	wg   *sync.WaitGroup
 }
 
 // API describes interface for working with remote API.
@@ -44,8 +41,6 @@ func NewBot(api API, st Storage, feeds ...*Feed) (*Bot, error) {
 		chats:   map[int64]struct{}{},
 		mx:      &sync.Mutex{},
 		storage: st,
-		stop:    make(chan struct{}),
-		wg:      &sync.WaitGroup{},
 	}
 
 	chatIDs, err := st.GetChats()
@@ -65,8 +60,8 @@ func NewBot(api API, st Storage, feeds ...*Feed) (*Bot, error) {
 	return bot, nil
 }
 
-// Start starts listening for updates.
-func (b *Bot) Start() error {
+// Run starts listening for updates.
+func (b *Bot) Run(ctx context.Context) error {
 	updates, err := b.api.GetUpdatesChan(tg.UpdateConfig{
 		Offset:  0,
 		Limit:   0,
@@ -76,28 +71,32 @@ func (b *Bot) Start() error {
 		return errors.Wrap(err, "get updates channel")
 	}
 
-	b.wg.Add(2)
-	go b.listenCommands(updates)
-	go b.processFeed()
+	var wg sync.WaitGroup
 
+	wg.Add(2)
+	go func() {
+		b.listenCommands(ctx, updates)
+		wg.Done()
+	}()
+	go func() {
+		b.processFeed()
+		wg.Done()
+	}()
+
+	wg.Add(len(b.feeds))
 	for _, f := range b.feeds {
-		f.Start()
+		f := f
+		go func() {
+			f.Run(ctx)
+			wg.Done()
+		}()
 	}
 
+	wg.Wait()
 	return nil
 }
 
-// Stop gracefully stops the bot.
-func (b *Bot) Stop() {
-	for _, f := range b.feeds {
-		f.Stop()
-	}
-	close(b.stop)
-	b.wg.Wait()
-}
-
-func (b *Bot) listenCommands(updates tg.UpdatesChannel) {
-	defer b.wg.Done()
+func (b *Bot) listenCommands(ctx context.Context, updates tg.UpdatesChannel) {
 	for {
 		select {
 		case upd := <-updates:
@@ -108,21 +107,25 @@ func (b *Bot) listenCommands(updates tg.UpdatesChannel) {
 			if err := b.handleCommand(upd); err != nil {
 				log.Printf("Failed to handle update: %v", err)
 			}
-		case <-b.stop:
+		case <-ctx.Done():
 			return
 		}
 	}
 }
 
 func (b *Bot) processFeed() {
-	defer b.wg.Done()
-
+	var wg sync.WaitGroup
 	for item := range b.feed() {
 		for chat := range b.chats {
-			b.wg.Add(1)
-			go b.send(chat, item)
+			chat := chat
+			wg.Add(1)
+			go func() {
+				b.send(chat, item)
+				wg.Done()
+			}()
 		}
 	}
+	wg.Wait()
 }
 
 func (b *Bot) handleCommand(upd tg.Update) error {
@@ -192,8 +195,6 @@ func (b *Bot) feed() <-chan Item {
 }
 
 func (b *Bot) send(chat int64, item Item) {
-	defer b.wg.Done()
-
 	msg := tg.NewPhotoShare(chat, item.Image)
 	msg.Caption = item.Title
 	_, err := b.api.Send(msg)

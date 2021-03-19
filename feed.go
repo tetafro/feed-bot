@@ -1,8 +1,8 @@
 package main
 
 import (
+	"context"
 	"log"
-	"sync"
 	"time"
 )
 
@@ -13,9 +13,6 @@ type Feed struct {
 	feed     chan Item
 	interval time.Duration
 	storage  Storage
-
-	stop chan struct{}
-	wg   *sync.WaitGroup
 }
 
 // Item is a single fetched item.
@@ -33,38 +30,25 @@ func NewFeed(s Storage, url string, f Fetcher, interval time.Duration) *Feed {
 		feed:     make(chan Item),
 		interval: interval,
 		storage:  s,
-		stop:     make(chan struct{}),
-		wg:       &sync.WaitGroup{},
 	}
 }
 
-// Start starts collecting the feed.
-func (f *Feed) Start() {
-	f.wg.Add(1)
+// Run starts collecting the feed.
+func (f *Feed) Run(ctx context.Context) {
+	defer close(f.feed)
 
-	go func() {
-		defer f.wg.Done()
-		defer close(f.feed)
+	t := time.NewTicker(f.interval)
+	defer t.Stop()
 
-		t := time.NewTicker(f.interval)
-		defer t.Stop()
-
-		f.fetch() // instant first fetch
-		for {
-			select {
-			case <-t.C:
-				f.fetch()
-			case <-f.stop:
-				return
-			}
+	f.fetch() // instant first fetch
+	for {
+		select {
+		case <-t.C:
+			f.fetch()
+		case <-ctx.Done():
+			return
 		}
-	}()
-}
-
-// Stop stops collecting the feed.
-func (f *Feed) Stop() {
-	close(f.stop)
-	f.wg.Wait()
+	}
 }
 
 // Feed periodically checks for updates and sends them to channel.

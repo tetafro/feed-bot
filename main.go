@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"log"
 	"os"
@@ -16,6 +17,13 @@ func main() {
 	flag.Parse()
 
 	log.Print("Starting...")
+
+	ctx, cancel := signal.NotifyContext(
+		context.Background(),
+		os.Interrupt,
+		syscall.SIGTERM,
+	)
+	defer cancel()
 
 	cfg, err := readConfig(*configFile)
 	if err != nil {
@@ -44,20 +52,8 @@ func main() {
 		log.Fatalf("Failed to init bot: %v", err)
 	}
 
-	if err := bot.Start(); err != nil {
+	if err := bot.Run(ctx); err != nil {
 		log.Fatalf("Failed to start bot: %v", err)
 	}
-	log.Print("Ready to work")
-
-	handleSignals()
 	log.Print("Shutdown")
-}
-
-func handleSignals() {
-	stop := make(chan os.Signal, 1)
-	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
-	defer signal.Stop(stop)
-
-	sig := <-stop
-	log.Printf("Got %s", sig)
 }

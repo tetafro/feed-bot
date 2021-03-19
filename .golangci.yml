@@ -45,3 +45,8 @@ linters:
 
 issues:
   exclude-use-default: false
+  exclude-rules:
+    - path: main\.go
+      linters:
+        - gocritic
+      text: "exitAfterDefer: log.Fatalf"

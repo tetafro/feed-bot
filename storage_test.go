@@ -106,7 +106,12 @@ func TestFileStorage_GetLastUpdate(t *testing.T) {
 	defer os.Remove(f) // nolint: errcheck
 
 	t.Run("valid data", func(t *testing.T) {
-		data := []byte(`{"chats": [], "feeds": {"my-feed": "2000-01-01T00:00:00Z"}}`)
+		data := []byte(`{
+			"chats": [],
+			"feeds": {
+				"my-feed": "2000-01-01T00:00:00Z"
+			}
+		}`)
 		err := ioutil.WriteFile(f, data, 0o600)
 		assert.NoError(t, err)
 
@@ -118,7 +123,13 @@ func TestFileStorage_GetLastUpdate(t *testing.T) {
 		assert.Equal(t, time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), ts)
 	})
 	t.Run("unknown feed data", func(t *testing.T) {
-		err := ioutil.WriteFile(f, []byte(`{"chats": [],"feeds": {"my-feed": "2000-01-01T00:00:00Z"}}`), 0o600)
+		data := []byte(`{
+			"chats": [],
+			"feeds": {
+				"my-feed": "2000-01-01T00:00:00Z"
+			}
+		}`)
+		err := ioutil.WriteFile(f, data, 0o600)
 		assert.NoError(t, err)
 
 		fs, err := NewFileStorage(f)

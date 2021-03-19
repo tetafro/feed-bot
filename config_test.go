@@ -1,6 +1,10 @@
 package main
 
 import (
+	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -48,5 +52,49 @@ func TestConfig_UnmarshalJSON(t *testing.T) {
 		cfg := &config{}
 		err := cfg.UnmarshalJSON([]byte(json))
 		assert.Error(t, err)
+	})
+}
+
+func TestReadConfig(t *testing.T) {
+	f := filepath.Join(
+		os.TempDir(),
+		fmt.Sprintf("feed-bot-testing-%d", time.Now().Nanosecond()),
+	)
+	defer os.Remove(f) // nolint: errcheck
+
+	t.Run("valid config", func(t *testing.T) {
+		data := []byte(`{
+			"telegram_token": "123456789:AAAAAAAAAAAAAAAAAAAAAAAAAAAAA-AAAAA",
+			"update_interval": "3h",
+			"data_file": "./data.json",
+			"feeds": ["https://example.com/rss.xml"]
+		}`)
+		err := ioutil.WriteFile(f, data, 0o600)
+		assert.NoError(t, err)
+
+		conf, err := readConfig(f)
+		assert.NoError(t, err)
+
+		expected := config{
+			TelegramToken:  "123456789:AAAAAAAAAAAAAAAAAAAAAAAAAAAAA-AAAAA",
+			UpdateInterval: 3 * time.Hour,
+			DataFile:       "./data.json",
+			Feeds:          []string{"https://example.com/rss.xml"},
+		}
+		assert.Equal(t, expected, conf)
+	})
+	t.Run("invalid config", func(t *testing.T) {
+		data := []byte(`]`)
+		err := ioutil.WriteFile(f, data, 0o600)
+		assert.NoError(t, err)
+
+		_, err = readConfig(f)
+		assert.EqualError(t, err,
+			"unmarshal file: invalid character ']' looking for beginning of value")
+	})
+	t.Run("non-existing file", func(t *testing.T) {
+		_, err := readConfig("abc.json")
+		assert.EqualError(t, err,
+			"read file: open abc.json: no such file or directory")
 	})
 }

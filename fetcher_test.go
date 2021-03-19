@@ -157,5 +157,5 @@ func (testServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 				</summary>
 			</entry>
 		</feed>`
-	w.Write([]byte(xml)) // nolint: errcheck
+	w.Write([]byte(xml)) // nolint: errcheck,gosec
 }

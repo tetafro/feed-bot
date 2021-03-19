@@ -24,12 +24,12 @@ func TestMapToSlice(t *testing.T) {
 	}{
 		{
 			name: "test-1",
-			m:    map[int64]struct{}{1: struct{}{}, 2: struct{}{}, 3: struct{}{}},
+			m:    map[int64]struct{}{1: {}, 2: {}, 3: {}},
 			s:    []int64{1, 2, 3},
 		},
 		{
 			name: "test-2",
-			m:    map[int64]struct{}{1: struct{}{}},
+			m:    map[int64]struct{}{1: {}},
 			s:    []int64{1},
 		},
 		{

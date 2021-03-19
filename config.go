@@ -44,7 +44,7 @@ func (c *config) UnmarshalJSON(data []byte) error {
 
 // readConfig returns configuration populated from environment variables.
 func readConfig(file string) (config, error) {
-	data, err := ioutil.ReadFile(file)
+	data, err := ioutil.ReadFile(file) // nolint: gosec
 	if err != nil {
 		return config{}, errors.Wrap(err, "read file")
 	}

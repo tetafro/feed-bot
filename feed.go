@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// Feed works with data feeds..
+// Feed works with data feeds.
 type Feed struct {
 	url      string
 	fetcher  Fetcher

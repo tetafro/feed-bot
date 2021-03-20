@@ -10,6 +10,10 @@ import (
 
 	tg "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/pkg/errors"
+
+	"github.com/tetafro/feed-bot/internal/bot"
+	"github.com/tetafro/feed-bot/internal/feed"
+	"github.com/tetafro/feed-bot/internal/storage"
 )
 
 var configFile = flag.String("f", "./config.json", "path to config file")
@@ -32,7 +36,7 @@ func run() error {
 	)
 	defer cancel()
 
-	cfg, err := readConfig(*configFile)
+	cfg, err := bot.ReadConfig(*configFile)
 	if err != nil {
 		return errors.Wrap(err, "failed to read config")
 	}
@@ -42,19 +46,17 @@ func run() error {
 		return errors.Wrap(err, "failed to init telegram API")
 	}
 
-	fs, err := NewFileStorage(cfg.DataFile)
+	fs, err := storage.NewFileStorage(cfg.DataFile)
 	if err != nil {
 		return errors.Wrap(err, "failed to init file storage")
 	}
 
-	feeds := make([]*Feed, len(cfg.Feeds))
-	i := 0
-	for _, url := range cfg.Feeds {
-		feeds[i] = NewFeed(fs, url, NewRSSFetcher(), cfg.UpdateInterval)
-		i++
+	feeds := make([]*feed.Feed, len(cfg.Feeds))
+	for i, url := range cfg.Feeds {
+		feeds[i] = feed.NewFeed(fs, url, feed.NewRSSFetcher(), cfg.UpdateInterval)
 	}
 
-	bot, err := NewBot(api, fs, feeds...)
+	bot, err := bot.NewBot(api, fs, feeds)
 	if err != nil {
 		return errors.Wrap(err, "failed to init bot")
 	}

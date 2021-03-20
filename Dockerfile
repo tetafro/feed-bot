@@ -6,7 +6,7 @@ RUN apk add --no-cache git gcc musl-dev
 
 COPY . .
 
-RUN go build -o ./bin/feed-bot .
+RUN go build -o ./bin/feed-bot ./cmd/feed-bot
 
 FROM alpine:3.9
 

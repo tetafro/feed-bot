@@ -1,4 +1,4 @@
-package main
+package bot
 
 import (
 	"fmt"
@@ -22,11 +22,11 @@ func TestConfig_UnmarshalJSON(t *testing.T) {
 				"https://example-2.com"
 			]
 		}`
-		cfg := &config{}
+		cfg := &Config{}
 		err := cfg.UnmarshalJSON([]byte(json))
 		assert.NoError(t, err)
 
-		expected := &config{
+		expected := &Config{
 			TelegramToken:  "abc",
 			UpdateInterval: 10 * time.Second,
 			DataFile:       "/tmp/data.json",
@@ -39,7 +39,7 @@ func TestConfig_UnmarshalJSON(t *testing.T) {
 	})
 	t.Run("malformed json", func(t *testing.T) {
 		json := `{"telegram_token": "abc",`
-		cfg := &config{}
+		cfg := &Config{}
 		err := cfg.UnmarshalJSON([]byte(json))
 		assert.Error(t, err)
 	})
@@ -49,7 +49,7 @@ func TestConfig_UnmarshalJSON(t *testing.T) {
 			"update_interval": "10S",
 			"feeds": []
 		}`
-		cfg := &config{}
+		cfg := &Config{}
 		err := cfg.UnmarshalJSON([]byte(json))
 		assert.Error(t, err)
 	})
@@ -72,10 +72,10 @@ func TestReadConfig(t *testing.T) {
 		err := ioutil.WriteFile(f, data, 0o600)
 		assert.NoError(t, err)
 
-		conf, err := readConfig(f)
+		conf, err := ReadConfig(f)
 		assert.NoError(t, err)
 
-		expected := config{
+		expected := Config{
 			TelegramToken:  "123456789:AAAAAAAAAAAAAAAAAAAAAAAAAAAAA-AAAAA",
 			UpdateInterval: 3 * time.Hour,
 			DataFile:       "./data.json",
@@ -88,12 +88,12 @@ func TestReadConfig(t *testing.T) {
 		err := ioutil.WriteFile(f, data, 0o600)
 		assert.NoError(t, err)
 
-		_, err = readConfig(f)
+		_, err = ReadConfig(f)
 		assert.EqualError(t, err,
 			"unmarshal file: invalid character ']' looking for beginning of value")
 	})
 	t.Run("non-existing file", func(t *testing.T) {
-		_, err := readConfig("abc.json")
+		_, err := ReadConfig("abc.json")
 		assert.EqualError(t, err,
 			"read file: open abc.json: no such file or directory")
 	})

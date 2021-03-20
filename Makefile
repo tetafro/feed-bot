@@ -18,11 +18,11 @@ lint:
 
 .PHONY: build
 build:
-	@ go build -o ./bin/notify-bot .
+	@ go build -o ./bin/feed-bot ./cmd/feed-bot
 
 .PHONY: run
 run:
-	@ ./bin/notify-bot
+	@ ./bin/feed-bot
 
 .PHONY: docker
 docker:

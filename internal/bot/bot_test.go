@@ -1,17 +1,16 @@
-package main
+package bot
 
 import (
 	"sort"
 	"testing"
 
-	tg "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestNewBot(t *testing.T) {
 	api := &mockAPI{}
 	st := &mockStorage{}
-	bot, err := NewBot(api, st)
+	bot, err := NewBot(api, st, nil)
 	assert.NoError(t, err)
 	assert.NotNil(t, bot)
 }
@@ -54,14 +53,4 @@ func TestMapToSlice(t *testing.T) {
 			assert.Equal(t, tt.s, s)
 		})
 	}
-}
-
-type mockAPI struct{}
-
-func (m *mockAPI) GetUpdatesChan(tg.UpdateConfig) (tg.UpdatesChannel, error) {
-	return nil, nil
-}
-
-func (m *mockAPI) Send(tg.Chattable) (tg.Message, error) {
-	return tg.Message{}, nil
 }

@@ -1,10 +1,17 @@
-package main
+// Package feed is responsible for getting data from external source (RSS).
+package feed
 
 import (
 	"context"
 	"log"
 	"time"
 )
+
+// Storage describes persistent datastorage.
+type Storage interface {
+	GetLastUpdate(feed string) (time.Time, error)
+	SaveLastUpdate(feed string, t time.Time) error
+}
 
 // Feed works with data feeds.
 type Feed struct {

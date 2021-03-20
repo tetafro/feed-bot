@@ -1,4 +1,4 @@
-module github.com/tetafro/notify-bot
+module github.com/tetafro/feed-bot
 
 go 1.16
 

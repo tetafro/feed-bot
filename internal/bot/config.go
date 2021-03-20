@@ -1,4 +1,4 @@
-package main
+package bot
 
 import (
 	"encoding/json"
@@ -8,8 +8,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-// config represents application configuration.
-type config struct {
+// Config represents application configuration.
+type Config struct {
 	TelegramToken  string        `json:"telegram_token"`
 	UpdateInterval time.Duration `json:"update_interval"`
 	DataFile       string        `json:"data_file"`
@@ -21,8 +21,9 @@ const (
 	defaultDataFile       = "./data.json"
 )
 
-func (c *config) UnmarshalJSON(data []byte) error {
-	type alias config
+// UnmarshalJSON unmarshals config using additional data type `time.Duration`.
+func (c *Config) UnmarshalJSON(data []byte) error {
+	type alias Config
 	a := &struct {
 		UpdateInterval string `json:"update_interval"`
 		*alias
@@ -42,20 +43,20 @@ func (c *config) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// readConfig returns configuration populated from environment variables.
-func readConfig(file string) (config, error) {
+// ReadConfig returns configuration populated from environment variables.
+func ReadConfig(file string) (Config, error) {
 	data, err := ioutil.ReadFile(file) // nolint: gosec
 	if err != nil {
-		return config{}, errors.Wrap(err, "read file")
+		return Config{}, errors.Wrap(err, "read file")
 	}
 
-	cfg := config{}
+	cfg := Config{}
 	if err := json.Unmarshal(data, &cfg); err != nil {
-		return config{}, errors.Wrap(err, "unmarshal file")
+		return Config{}, errors.Wrap(err, "unmarshal file")
 	}
 
 	if cfg.TelegramToken == "" {
-		return config{}, errors.New("empty token")
+		return Config{}, errors.New("empty token")
 	}
 	if cfg.UpdateInterval == 0 {
 		cfg.UpdateInterval = defaultUpdateInterval

@@ -1,4 +1,5 @@
-package main
+// Package storage is responsible for storing data.
+package storage
 
 import (
 	"encoding/json"
@@ -9,14 +10,6 @@ import (
 
 	"github.com/pkg/errors"
 )
-
-// Storage describes persistent datastorage.
-type Storage interface {
-	GetChats() (ids []int64, err error)
-	SaveChats(ids []int64) error
-	GetLastUpdate(feed string) (time.Time, error)
-	SaveLastUpdate(feed string, t time.Time) error
-}
 
 // FileStorage is a storage that uses plain text file for storing data.
 type FileStorage struct {
@@ -42,7 +35,7 @@ func NewFileStorage(file string) (*FileStorage, error) {
 		if err != nil {
 			return nil, errors.Wrap(err, "encode init data")
 		}
-		if err := ioutil.WriteFile(fs.file, b, 0600); err != nil {
+		if err := ioutil.WriteFile(fs.file, b, 0o600); err != nil {
 			return nil, errors.Wrap(err, "init data file")
 		}
 	} else if err != nil {
@@ -124,7 +117,7 @@ func (s *FileStorage) save(data fileStorageData) error {
 	if err != nil {
 		return errors.Wrap(err, "encode data")
 	}
-	err = ioutil.WriteFile(s.file, b, 0600)
+	err = ioutil.WriteFile(s.file, b, 0o600)
 	if err != nil {
 		return errors.Wrap(err, "write data to file")
 	}

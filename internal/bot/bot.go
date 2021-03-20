@@ -1,4 +1,6 @@
-package main
+// Package bot provides main application entity. It is responsible for wiring
+// together all components: data feeds, chats, state storage.
+package bot
 
 import (
 	"context"
@@ -7,7 +9,21 @@ import (
 
 	tg "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/pkg/errors"
+
+	"github.com/tetafro/feed-bot/internal/feed"
 )
+
+// Storage describes persistent datastorage.
+type Storage interface {
+	GetChats() (ids []int64, err error)
+	SaveChats(ids []int64) error
+}
+
+// API describes interface for working with remote API.
+type API interface {
+	GetUpdatesChan(tg.UpdateConfig) (tg.UpdatesChannel, error)
+	Send(tg.Chattable) (tg.Message, error)
+}
 
 // Bot is a telegram bot, that handles two commands: start and stop.
 // Starts commands makes bot send feed updates to user.
@@ -17,7 +33,7 @@ type Bot struct {
 	api API
 
 	// Set of RSS feeds
-	feeds []*Feed
+	feeds []*feed.Feed
 
 	// List of connected users
 	chats map[int64]struct{}
@@ -27,14 +43,8 @@ type Bot struct {
 	storage Storage
 }
 
-// API describes interface for working with remote API.
-type API interface {
-	GetUpdatesChan(tg.UpdateConfig) (tg.UpdatesChannel, error)
-	Send(tg.Chattable) (tg.Message, error)
-}
-
 // NewBot creates new bot.
-func NewBot(api API, st Storage, feeds ...*Feed) (*Bot, error) {
+func NewBot(api API, st Storage, feeds []*feed.Feed) (*Bot, error) {
 	bot := &Bot{
 		api:     api,
 		feeds:   feeds,
@@ -172,13 +182,13 @@ func (b *Bot) removeChat(id int64) {
 }
 
 // feed merges all feeds into one channel.
-func (b *Bot) feed() <-chan Item {
+func (b *Bot) feed() <-chan feed.Item {
 	wg := sync.WaitGroup{}
 	wg.Add(len(b.feeds))
 
-	all := make(chan Item)
+	all := make(chan feed.Item)
 	for _, f := range b.feeds {
-		go func(ch <-chan Item) {
+		go func(ch <-chan feed.Item) {
 			defer wg.Done()
 			for item := range ch {
 				all <- item
@@ -194,7 +204,7 @@ func (b *Bot) feed() <-chan Item {
 	return all
 }
 
-func (b *Bot) send(chat int64, item Item) {
+func (b *Bot) send(chat int64, item feed.Item) {
 	msg := tg.NewPhotoShare(chat, item.Image)
 	msg.Caption = item.Title
 	_, err := b.api.Send(msg)

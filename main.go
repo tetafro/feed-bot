@@ -9,14 +9,21 @@ import (
 	"syscall"
 
 	tg "github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/pkg/errors"
 )
 
 var configFile = flag.String("f", "./config.json", "path to config file")
 
 func main() {
-	flag.Parse()
-
 	log.Print("Starting...")
+	if err := run(); err != nil {
+		log.Fatalf("ERROR: %v", err)
+	}
+	log.Print("Shutdown")
+}
+
+func run() error {
+	flag.Parse()
 
 	ctx, cancel := signal.NotifyContext(
 		context.Background(),
@@ -27,17 +34,17 @@ func main() {
 
 	cfg, err := readConfig(*configFile)
 	if err != nil {
-		log.Fatalf("Failed to read config: %v", err)
+		return errors.Wrap(err, "failed to read config")
 	}
 
 	api, err := tg.NewBotAPI(cfg.TelegramToken)
 	if err != nil {
-		log.Fatalf("Failed to init telegram API: %v", err)
+		return errors.Wrap(err, "failed to init telegram API")
 	}
 
 	fs, err := NewFileStorage(cfg.DataFile)
 	if err != nil {
-		log.Fatalf("Failed to init file storage: %v", err)
+		return errors.Wrap(err, "failed to init file storage")
 	}
 
 	feeds := make([]*Feed, len(cfg.Feeds))
@@ -49,11 +56,11 @@ func main() {
 
 	bot, err := NewBot(api, fs, feeds...)
 	if err != nil {
-		log.Fatalf("Failed to init bot: %v", err)
+		return errors.Wrap(err, "failed to init bot")
 	}
 
 	if err := bot.Run(ctx); err != nil {
-		log.Fatalf("Failed to start bot: %v", err)
+		return errors.Wrap(err, "failed to start bot")
 	}
-	log.Print("Shutdown")
+	return nil
 }

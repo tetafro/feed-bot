@@ -12,4 +12,5 @@ require (
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
 	golang.org/x/net v0.0.0-20190611141213-3f473d35a33a // indirect
 	golang.org/x/text v0.3.2 // indirect
+	gopkg.in/yaml.v2 v2.4.0
 )

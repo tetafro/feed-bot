@@ -1,47 +1,28 @@
 package bot
 
 import (
-	"encoding/json"
 	"io/ioutil"
 	"time"
 
 	"github.com/pkg/errors"
+	"gopkg.in/yaml.v2"
 )
 
 // Config represents application configuration.
 type Config struct {
-	TelegramToken  string        `json:"telegram_token"`
-	UpdateInterval time.Duration `json:"update_interval"`
-	DataFile       string        `json:"data_file"`
-	Feeds          []string      `json:"feeds"`
+	TelegramToken  string        `yaml:"telegram_token"`
+	UpdateInterval time.Duration `yaml:"update_interval"`
+	DataFile       string        `yaml:"data_file"`
+	Feeds          []string      `yaml:"feeds"`
+	// Debugging
+	InMemoryStorage bool `yaml:"in_memory_storage"`
+	LogNotifier     bool `yaml:"log_notifier"`
 }
 
 const (
 	defaultUpdateInterval = 1 * time.Hour
-	defaultDataFile       = "./data.json"
+	defaultDataFile       = "./data.yaml"
 )
-
-// UnmarshalJSON unmarshals config using additional data type `time.Duration`.
-func (c *Config) UnmarshalJSON(data []byte) error {
-	type alias Config
-	a := &struct {
-		UpdateInterval string `json:"update_interval"`
-		*alias
-	}{
-		alias: (*alias)(c),
-	}
-	if err := json.Unmarshal(data, &a); err != nil {
-		return err
-	}
-
-	var err error
-	c.UpdateInterval, err = time.ParseDuration(a.UpdateInterval)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
 
 // ReadConfig returns configuration populated from environment variables.
 func ReadConfig(file string) (Config, error) {
@@ -50,20 +31,20 @@ func ReadConfig(file string) (Config, error) {
 		return Config{}, errors.Wrap(err, "read file")
 	}
 
-	cfg := Config{}
-	if err := json.Unmarshal(data, &cfg); err != nil {
+	var conf Config
+	if err := yaml.Unmarshal(data, &conf); err != nil {
 		return Config{}, errors.Wrap(err, "unmarshal file")
 	}
 
-	if cfg.TelegramToken == "" {
+	if !conf.LogNotifier && conf.TelegramToken == "" {
 		return Config{}, errors.New("empty token")
 	}
-	if cfg.UpdateInterval == 0 {
-		cfg.UpdateInterval = defaultUpdateInterval
+	if conf.UpdateInterval == 0 {
+		conf.UpdateInterval = defaultUpdateInterval
 	}
-	if cfg.DataFile == "" {
-		cfg.DataFile = defaultDataFile
+	if !conf.InMemoryStorage && conf.DataFile == "" {
+		conf.DataFile = defaultDataFile
 	}
 
-	return cfg, nil
+	return conf, nil
 }

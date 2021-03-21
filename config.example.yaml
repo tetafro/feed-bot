@@ -1,0 +1,4 @@
+telegram_token: "123456789:AAAAAAAAAAAAAAAAAAAAAAAAAAAAA-AAAAA"
+update_interval: 3h
+feeds:
+  - "https://example.com/rss.xml"

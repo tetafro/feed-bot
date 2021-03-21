@@ -6,17 +6,18 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 
-	tg "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/pkg/errors"
 
 	"github.com/tetafro/feed-bot/internal/bot"
 	"github.com/tetafro/feed-bot/internal/feed"
+	"github.com/tetafro/feed-bot/internal/notify"
 	"github.com/tetafro/feed-bot/internal/storage"
 )
 
-var configFile = flag.String("f", "./config.json", "path to config file")
+var configFile = flag.String("f", "./config.yaml", "path to config file")
 
 func main() {
 	log.Print("Starting...")
@@ -36,33 +37,50 @@ func run() error {
 	)
 	defer cancel()
 
-	cfg, err := bot.ReadConfig(*configFile)
+	conf, err := bot.ReadConfig(*configFile)
 	if err != nil {
 		return errors.Wrap(err, "failed to read config")
 	}
 
-	api, err := tg.NewBotAPI(cfg.TelegramToken)
-	if err != nil {
-		return errors.Wrap(err, "failed to init telegram API")
+	var feedStorage feed.Storage
+	var notifyStorage notify.Storage
+	if conf.InMemoryStorage {
+		mem := storage.NewMemStorage()
+		feedStorage = mem
+		notifyStorage = mem
+	} else {
+		fs, err := storage.NewFileStorage(conf.DataFile)
+		if err != nil {
+			return errors.Wrap(err, "failed to init state storage")
+		}
+		feedStorage = fs
+		notifyStorage = fs
 	}
 
-	fs, err := storage.NewFileStorage(cfg.DataFile)
-	if err != nil {
-		return errors.Wrap(err, "failed to init file storage")
+	var wg sync.WaitGroup
+	var notifier bot.Notifier
+	if conf.LogNotifier {
+		notifier = notify.NewLogNotifier()
+	} else {
+		tg, err := notify.NewTelegramNotifier(conf.TelegramToken, notifyStorage)
+		if err != nil {
+			return errors.Wrap(err, "failed to init telegram notifier")
+		}
+		wg.Add(1)
+		go func() {
+			tg.ListenCommands(ctx)
+			wg.Done()
+		}()
+		notifier = tg
 	}
 
-	feeds := make([]*feed.Feed, len(cfg.Feeds))
-	for i, url := range cfg.Feeds {
-		feeds[i] = feed.NewFeed(fs, url, feed.NewRSSFetcher(), cfg.UpdateInterval)
+	feeds := make([]bot.Feed, len(conf.Feeds))
+	for i, url := range conf.Feeds {
+		feeds[i] = feed.NewRSSFeed(feedStorage, url)
 	}
 
-	bot, err := bot.NewBot(api, fs, feeds)
-	if err != nil {
-		return errors.Wrap(err, "failed to init bot")
-	}
+	bot.New(notifier, feeds, conf.UpdateInterval).Run(ctx)
 
-	if err := bot.Run(ctx); err != nil {
-		return errors.Wrap(err, "failed to start bot")
-	}
+	wg.Wait()
 	return nil
 }

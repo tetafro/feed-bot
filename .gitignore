@@ -1,5 +1,5 @@
 /bin/
 /tmp/
 /vendor/
-/config.json
-/data.json
+/config.yaml
+/data.yaml

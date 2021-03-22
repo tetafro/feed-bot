@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -66,7 +67,6 @@ func TestReadConfig(t *testing.T) {
 
 	t.Run("non-existing file", func(t *testing.T) {
 		_, err := ReadConfig("abc.yaml")
-		assert.EqualError(t, err,
-			"read file: open abc.yaml: no such file or directory")
+		assert.True(t, os.IsNotExist(errors.Cause(err)))
 	})
 }

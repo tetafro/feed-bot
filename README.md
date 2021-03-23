@@ -11,7 +11,7 @@ Create bot and get Telegram API token from the bot called `@botfarther`.
 
 Copy and populate config
 ```sh
-cp config.example.json config.json
+cp config.example.yaml config.yaml
 ```
 
 Start

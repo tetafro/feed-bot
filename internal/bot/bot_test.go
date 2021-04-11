@@ -21,7 +21,7 @@ func TestNewBot(t *testing.T) {
 
 func TestBot_Run(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
-		ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
+		ctx, cancel := context.WithTimeout(context.Background(), 25*time.Millisecond)
 		defer cancel()
 
 		n := &testNotifier{}
@@ -31,7 +31,7 @@ func TestBot_Run(t *testing.T) {
 		f2 := &testFeed{
 			items: []feed.Item{{Title: "Three"}, {Title: "Four"}},
 		}
-		b := New(n, []Feed{f1, f2}, 10*time.Millisecond)
+		b := New(n, []Feed{f1, f2}, 1*time.Millisecond)
 
 		b.Run(ctx)
 
@@ -45,7 +45,7 @@ func TestBot_Run(t *testing.T) {
 		ctx, cancel := context.WithCancel(context.Background())
 
 		n := &testNotifier{}
-		b := New(n, []Feed{&testFeed{}}, 25*time.Millisecond)
+		b := New(n, []Feed{&testFeed{}}, 1*time.Millisecond)
 
 		cancel()
 		b.Run(ctx)
@@ -61,7 +61,7 @@ func TestBot_Run(t *testing.T) {
 		log.SetOutput(&buf)
 		log.SetFlags(0)
 
-		ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
+		ctx, cancel := context.WithTimeout(context.Background(), 25*time.Millisecond)
 		defer cancel()
 
 		n := &testNotifier{}
@@ -69,7 +69,7 @@ func TestBot_Run(t *testing.T) {
 			items: []feed.Item{{Title: "One"}, {Title: "Two"}},
 		}
 		f2 := &testFeed{err: errors.New("fail")}
-		b := New(n, []Feed{f1, f2}, 10*time.Millisecond)
+		b := New(n, []Feed{f1, f2}, 1*time.Millisecond)
 
 		b.Run(ctx)
 

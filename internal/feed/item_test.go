@@ -14,6 +14,6 @@ func TestItem_String(t *testing.T) {
 		Image:     "http://example.com/image.png",
 	}
 
-	expected := "[2020-01-01 10:00] Title: http://example.com/image.png"
+	expected := "[2020-01-01 10:00] Title http://example.com/image.png"
 	assert.Equal(t, expected, item.String())
 }

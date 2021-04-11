@@ -13,7 +13,11 @@ type Item struct {
 }
 
 func (i Item) String() string {
-	return fmt.Sprintf("[%s] %s: %s",
+	text := i.Title
+	if i.Image != "" {
+		text += " " + i.Image
+	}
+	return fmt.Sprintf("[%s] %s",
 		i.Published.Format("2006-01-02 15:04"),
-		i.Title, i.Image)
+		text)
 }

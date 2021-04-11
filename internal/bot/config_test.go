@@ -40,7 +40,7 @@ func TestReadConfig(t *testing.T) {
 
 	t.Run("debug config", func(t *testing.T) {
 		data := []byte("feeds: [\"https://example.com/rss.xml\"]\n" +
-			"in_memory_storage: true\n" +
+			"data_file: ./data.yaml\n" +
 			"log_notifier: true\n")
 		assert.NoError(t, ioutil.WriteFile(f, data, 0o600))
 
@@ -48,10 +48,10 @@ func TestReadConfig(t *testing.T) {
 		assert.NoError(t, err)
 
 		expected := Config{
-			UpdateInterval:  defaultUpdateInterval,
-			Feeds:           []string{"https://example.com/rss.xml"},
-			InMemoryStorage: true,
-			LogNotifier:     true,
+			UpdateInterval: defaultUpdateInterval,
+			DataFile:       "./data.yaml",
+			Feeds:          []string{"https://example.com/rss.xml"},
+			LogNotifier:    true,
 		}
 		assert.Equal(t, expected, conf)
 	})

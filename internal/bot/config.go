@@ -14,9 +14,7 @@ type Config struct {
 	UpdateInterval time.Duration `yaml:"update_interval"`
 	DataFile       string        `yaml:"data_file"`
 	Feeds          []string      `yaml:"feeds"`
-	// Debugging
-	InMemoryStorage bool `yaml:"in_memory_storage"`
-	LogNotifier     bool `yaml:"log_notifier"`
+	LogNotifier    bool          `yaml:"log_notifier"`
 }
 
 const (
@@ -42,7 +40,7 @@ func ReadConfig(file string) (Config, error) {
 	if conf.UpdateInterval == 0 {
 		conf.UpdateInterval = defaultUpdateInterval
 	}
-	if !conf.InMemoryStorage && conf.DataFile == "" {
+	if conf.DataFile == "" {
 		conf.DataFile = defaultDataFile
 	}
 

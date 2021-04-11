@@ -42,19 +42,9 @@ func run() error {
 		return errors.Wrap(err, "failed to read config")
 	}
 
-	var feedStorage feed.Storage
-	var notifyStorage notify.Storage
-	if conf.InMemoryStorage {
-		mem := storage.NewMemStorage()
-		feedStorage = mem
-		notifyStorage = mem
-	} else {
-		fs, err := storage.NewFileStorage(conf.DataFile)
-		if err != nil {
-			return errors.Wrap(err, "failed to init state storage")
-		}
-		feedStorage = fs
-		notifyStorage = fs
+	fs, err := storage.NewFileStorage(conf.DataFile)
+	if err != nil {
+		return errors.Wrap(err, "failed to init state storage")
 	}
 
 	var wg sync.WaitGroup
@@ -62,7 +52,7 @@ func run() error {
 	if conf.LogNotifier {
 		notifier = notify.NewLogNotifier()
 	} else {
-		tg, err := notify.NewTelegramNotifier(conf.TelegramToken, notifyStorage)
+		tg, err := notify.NewTelegramNotifier(conf.TelegramToken, fs)
 		if err != nil {
 			return errors.Wrap(err, "failed to init telegram notifier")
 		}
@@ -76,7 +66,7 @@ func run() error {
 
 	feeds := make([]bot.Feed, len(conf.Feeds))
 	for i, url := range conf.Feeds {
-		feeds[i] = feed.NewRSSFeed(feedStorage, url)
+		feeds[i] = feed.NewRSSFeed(fs, url)
 	}
 
 	bot.New(notifier, feeds, conf.UpdateInterval).Run(ctx)

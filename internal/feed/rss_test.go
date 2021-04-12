@@ -24,8 +24,7 @@ func TestFeed(t *testing.T) {
 		assert.Len(t, items, 1)
 
 		expected := Item{
-			Title:     "Item Title",
-			Image:     "https://example.com/image.png",
+			Link:      "https://example.com/content/",
 			Published: time.Date(2020, 1, 1, 15, 0, 0, 0, time.UTC),
 		}
 		assert.Equal(t, expected, items[0])
@@ -98,22 +97,20 @@ func (s *testRSSServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	if !s.data {
 		_, _ = w.Write([]byte(`<?xml version="1.0" encoding="utf-8"?>` + "\n" +
 			`<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">` +
-			`<title>Feed Title</title>` +
 			`<id>feed_id</id>` +
+			`<link href="https://example.com/content/"/>` +
 			`<updated>2020-01-01T15:00:00Z</updated>` +
 			`</feed>`))
 		return
 	}
 	_, _ = w.Write([]byte(`<?xml version="1.0" encoding="utf-8"?>` + "\n" +
 		`<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">` +
-		`<title>Feed Title</title>` +
 		`<id>feed_id</id>` +
 		`<updated>2020-01-01T15:00:00Z</updated>` +
 		`<entry>` +
-		`<title>Item Title</title>` +
 		`<id>item_id</id>` +
 		`<updated>2020-01-01T15:00:00Z</updated>` +
-		`<summary type="html">&lt;img src="https://example.com/image.png"/&gt;</summary>` +
+		`<link href="https://example.com/content/"/>` +
 		`</entry>` +
 		`</feed>`))
 }

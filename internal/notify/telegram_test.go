@@ -137,11 +137,10 @@ func TestTelegramNotifier_Notify(t *testing.T) {
 		}
 
 		tn.Notify(context.Background(), feed.Item{
-			Title: "title",
-			Image: "http://example.com/image.png",
+			Link: "http://example.com/content/",
 		})
 
-		assert.Equal(t, "title|http://example.com/image.png", api.sent)
+		assert.Equal(t, "http://example.com/content/", api.sent)
 	})
 
 	t.Run("no active chats", func(t *testing.T) {
@@ -153,8 +152,7 @@ func TestTelegramNotifier_Notify(t *testing.T) {
 		}
 
 		tn.Notify(context.Background(), feed.Item{
-			Title: "title",
-			Image: "http://example.com/image.png",
+			Link: "http://example.com/content/",
 		})
 
 		assert.Equal(t, "", api.sent)

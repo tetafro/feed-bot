@@ -2,15 +2,11 @@
 package feed
 
 import (
-	"regexp"
-	"strings"
 	"time"
 
 	"github.com/mmcdole/gofeed"
 	"github.com/pkg/errors"
 )
-
-var regexpImageSrc = regexp.MustCompile(`src="([^\s]+)"`)
 
 // Storage describes persistent datastorage.
 type Storage interface {
@@ -73,35 +69,15 @@ func (f *RSSFeed) Fetch() ([]Item, error) {
 
 func parse(in *gofeed.Item) Item {
 	item := Item{
-		Title:     in.Title,
+		Link:      in.Link,
 		Published: time.Now(),
 	}
 
-	// Published
 	if in.PublishedParsed != nil {
 		item.Published = *in.PublishedParsed
 	}
 	if in.UpdatedParsed != nil {
 		item.Published = *in.UpdatedParsed
-	}
-
-	// Image
-	if in.Description != "" {
-		res := regexpImageSrc.FindStringSubmatch(in.Description)
-		if len(res) == 2 {
-			item.Image = res[1]
-		}
-	}
-	if in.Content != "" {
-		res := regexpImageSrc.FindStringSubmatch(in.Content)
-		if len(res) == 2 {
-			item.Image = res[1]
-		}
-	}
-
-	// Fix missing protocol
-	if strings.HasPrefix(item.Image, "//") {
-		item.Image = "https:" + item.Image
 	}
 
 	return item

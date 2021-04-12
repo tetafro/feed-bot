@@ -166,9 +166,7 @@ func (t *TelegramNotifier) removeChat(id int64) error {
 }
 
 func (t *TelegramNotifier) send(chat int64, item feed.Item) error {
-	msg := tg.NewPhotoShare(chat, item.Image)
-	msg.Caption = item.Title
-
+	msg := tg.NewMessage(chat, item.Link)
 	_, err := t.api.Send(msg)
 	return err
 }

@@ -26,17 +26,17 @@ func TestBot_Run(t *testing.T) {
 
 		n := &testNotifier{}
 		f1 := &testFeed{
-			items: []feed.Item{{Title: "One"}, {Title: "Two"}},
+			items: []feed.Item{{Link: "One"}, {Link: "Two"}},
 		}
 		f2 := &testFeed{
-			items: []feed.Item{{Title: "Three"}, {Title: "Four"}},
+			items: []feed.Item{{Link: "Three"}, {Link: "Four"}},
 		}
 		b := New(n, []Feed{f1, f2}, 1*time.Millisecond)
 
 		b.Run(ctx)
 
 		expected := []feed.Item{
-			{Title: "One"}, {Title: "Two"}, {Title: "Three"}, {Title: "Four"},
+			{Link: "One"}, {Link: "Two"}, {Link: "Three"}, {Link: "Four"},
 		}
 		assert.ElementsMatch(t, expected, n.items)
 	})
@@ -66,7 +66,7 @@ func TestBot_Run(t *testing.T) {
 
 		n := &testNotifier{}
 		f1 := &testFeed{
-			items: []feed.Item{{Title: "One"}, {Title: "Two"}},
+			items: []feed.Item{{Link: "One"}, {Link: "Two"}},
 		}
 		f2 := &testFeed{err: errors.New("fail")}
 		b := New(n, []Feed{f1, f2}, 1*time.Millisecond)
@@ -74,7 +74,7 @@ func TestBot_Run(t *testing.T) {
 		b.Run(ctx)
 
 		expected := []feed.Item{
-			{Title: "One"}, {Title: "Two"},
+			{Link: "One"}, {Link: "Two"},
 		}
 		assert.ElementsMatch(t, expected, n.items)
 		assert.Equal(t, "Failed to fetch items: fail\n", buf.String())

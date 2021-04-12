@@ -35,7 +35,9 @@ func TestFeed(t *testing.T) {
 		server := httptest.NewServer(&testRSSServer{data: true})
 		defer server.Close()
 
-		storage.time = time.Date(2021, 1, 1, 10, 0, 0, 0, time.UTC)
+		storage := &testStorage{
+			time: time.Date(2021, 1, 1, 10, 0, 0, 0, time.UTC),
+		}
 
 		f := NewRSSFeed(storage, server.URL)
 		items, err := f.Fetch()
@@ -57,7 +59,7 @@ func TestFeed(t *testing.T) {
 		server := httptest.NewServer(&testRSSServer{data: false})
 		defer server.Close()
 
-		storage.time = time.Time{}
+		storage := &testStorage{}
 
 		f := NewRSSFeed(storage, server.URL)
 		items, err := f.Fetch()

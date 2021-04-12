@@ -42,6 +42,7 @@ func (f *RSSFeed) Fetch() ([]Item, error) {
 		if err := f.storage.SaveLastUpdate(f.url, time.Now()); err != nil {
 			return nil, errors.Wrap(err, "save last update time")
 		}
+		return nil, nil
 	}
 
 	feed, err := f.parser.ParseURL(f.url)

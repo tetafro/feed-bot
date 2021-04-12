@@ -10,15 +10,15 @@ import (
 )
 
 func TestFeed(t *testing.T) {
+	storage := &testStorage{
+		time: time.Date(2020, 1, 1, 10, 0, 0, 0, time.UTC),
+	}
+
 	t.Run("fetch new item", func(t *testing.T) {
 		server := httptest.NewServer(&testRSSServer{data: true})
 		defer server.Close()
 
-		st := &testStorage{
-			time: time.Date(2020, 1, 1, 10, 0, 0, 0, time.UTC),
-		}
-
-		f := NewRSSFeed(st, server.URL)
+		f := NewRSSFeed(storage, server.URL)
 		items, err := f.Fetch()
 		assert.NoError(t, err)
 		assert.Len(t, items, 1)
@@ -35,11 +35,9 @@ func TestFeed(t *testing.T) {
 		server := httptest.NewServer(&testRSSServer{data: true})
 		defer server.Close()
 
-		st := &testStorage{
-			time: time.Date(2021, 1, 1, 10, 0, 0, 0, time.UTC),
-		}
+		storage.time = time.Date(2021, 1, 1, 10, 0, 0, 0, time.UTC)
 
-		f := NewRSSFeed(st, server.URL)
+		f := NewRSSFeed(storage, server.URL)
 		items, err := f.Fetch()
 		assert.NoError(t, err)
 		assert.Len(t, items, 0)
@@ -49,11 +47,19 @@ func TestFeed(t *testing.T) {
 		server := httptest.NewServer(&testRSSServer{data: false})
 		defer server.Close()
 
-		st := &testStorage{
-			time: time.Date(2020, 1, 1, 10, 0, 0, 0, time.UTC),
-		}
+		f := NewRSSFeed(storage, server.URL)
+		items, err := f.Fetch()
+		assert.NoError(t, err)
+		assert.Len(t, items, 0)
+	})
 
-		f := NewRSSFeed(st, server.URL)
+	t.Run("first try", func(t *testing.T) {
+		server := httptest.NewServer(&testRSSServer{data: false})
+		defer server.Close()
+
+		storage.time = time.Time{}
+
+		f := NewRSSFeed(storage, server.URL)
 		items, err := f.Fetch()
 		assert.NoError(t, err)
 		assert.Len(t, items, 0)
@@ -63,14 +69,14 @@ func TestFeed(t *testing.T) {
 		server := httptest.NewServer(&testRSSServer{err: true})
 		defer server.Close()
 
-		f := NewRSSFeed(nil, server.URL)
+		f := NewRSSFeed(storage, server.URL)
 		_, err := f.Fetch()
 		assert.EqualError(t, err,
 			"parse url: http error: 500 Internal Server Error")
 	})
 
 	t.Run("invalid url", func(t *testing.T) {
-		f := NewRSSFeed(nil, "xxx://example.com")
+		f := NewRSSFeed(storage, "xxx://example.com")
 		_, err := f.Fetch()
 		assert.EqualError(t, err,
 			`parse url: Get "xxx://example.com": unsupported protocol scheme "xxx"`)

@@ -36,17 +36,20 @@ func NewRSSFeed(s Storage, url string) *RSSFeed {
 
 // Fetch fetches last item from RSS feed.
 func (f *RSSFeed) Fetch() ([]Item, error) {
+	last := f.storage.GetLastUpdate(f.url)
+	if last.IsZero() {
+		// First access
+		if err := f.storage.SaveLastUpdate(f.url, time.Now()); err != nil {
+			return nil, errors.Wrap(err, "save last update time")
+		}
+	}
+
 	feed, err := f.parser.ParseURL(f.url)
 	if err != nil {
 		return nil, errors.Wrap(err, "parse url")
 	}
 	if len(feed.Items) == 0 {
 		return nil, nil
-	}
-
-	last := f.storage.GetLastUpdate(f.url)
-	if last.IsZero() {
-		last = time.Now()
 	}
 
 	var items []Item // nolint: prealloc

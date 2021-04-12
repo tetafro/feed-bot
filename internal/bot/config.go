@@ -43,6 +43,9 @@ func ReadConfig(file string) (Config, error) {
 	if conf.DataFile == "" {
 		conf.DataFile = defaultDataFile
 	}
+	if len(conf.Feeds) == 0 {
+		return Config{}, errors.New("empty feeds list")
+	}
 
 	return conf, nil
 }

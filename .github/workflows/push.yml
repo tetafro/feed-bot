@@ -1,4 +1,4 @@
-name: Push commits
+name: Build
 
 # Run on push, skip release tags
 on:

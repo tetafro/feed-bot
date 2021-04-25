@@ -11,6 +11,7 @@ linters:
     - depguard
     - dogsled
     - errcheck
+    - exportloopref
     - gochecknoinits
     - goconst
     - gocritic
@@ -18,21 +19,19 @@ linters:
     - godot
     - gofmt
     - goimports
-    - goprintffuncname
     - golint
+    - goprintffuncname
     - gosec
     - gosimple
     - govet
     - ineffassign
     - lll
-    - maligned
     - misspell
     - nakedret
     - nestif
     - nolintlint
     - prealloc
     - rowserrcheck
-    - scopelint
     - staticcheck
     - structcheck
     - stylecheck

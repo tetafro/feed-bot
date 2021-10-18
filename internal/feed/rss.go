@@ -23,9 +23,11 @@ type RSSFeed struct {
 
 // NewRSSFeed returns new RSS feed.
 func NewRSSFeed(s Storage, url string) *RSSFeed {
+	p := gofeed.NewParser()
+	p.Client = newHTTPClient()
 	return &RSSFeed{
 		url:     url,
-		parser:  gofeed.NewParser(),
+		parser:  p,
 		storage: s,
 	}
 }

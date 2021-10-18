@@ -138,15 +138,15 @@ func TestFileStorage_SaveChats(t *testing.T) {
 
 func TestFileStorage_GetLastUpdate(t *testing.T) {
 	fs := &FileStorage{
-		state: State{Feeds: map[string]time.Time{}},
+		state: State{Feeds: map[string]int64{}},
 		mx:    &sync.Mutex{},
 	}
 
-	ts := time.Now()
-	fs.state.Feeds["feed1"] = ts
+	id := int64(100)
+	fs.state.Feeds["feed1"] = id
 
-	assert.True(t, fs.GetLastUpdate("feed2").IsZero())
-	assert.Equal(t, ts, fs.GetLastUpdate("feed1"))
+	assert.Zero(t, fs.GetLastUpdate("feed2"))
+	assert.Equal(t, id, fs.GetLastUpdate("feed1"))
 }
 
 func TestFileStorage_SaveLastUpdate(t *testing.T) {
@@ -159,20 +159,19 @@ func TestFileStorage_SaveLastUpdate(t *testing.T) {
 	fs, err := NewFileStorage(f)
 	assert.NoError(t, err)
 
-	ts1 := time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
-	ts2 := ts1.Add(time.Second)
+	id1, id2 := int64(100), int64(101)
 
-	assert.NoError(t, fs.SaveLastUpdate("feed", ts1))
+	assert.NoError(t, fs.SaveLastUpdate("feed", id1))
 	assertFile(t, fs.file,
 		"chats: []\n"+
 			"feeds:\n"+
-			"  feed: 2000-01-01T00:00:00Z\n")
+			"  feed: 100\n")
 
-	assert.NoError(t, fs.SaveLastUpdate("feed", ts2))
+	assert.NoError(t, fs.SaveLastUpdate("feed", id2))
 	assertFile(t, fs.file,
 		"chats: []\n"+
 			"feeds:\n"+
-			"  feed: 2000-01-01T00:00:01Z\n")
+			"  feed: 101\n")
 }
 
 func assertFile(t *testing.T, file, content string) {

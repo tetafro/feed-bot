@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"os"
 	"sync"
-	"time"
 
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
@@ -22,7 +21,7 @@ type FileStorage struct {
 func NewFileStorage(file string) (*FileStorage, error) {
 	s := &FileStorage{
 		file:  file,
-		state: State{Feeds: map[string]time.Time{}},
+		state: State{Feeds: map[string]int64{}},
 		mx:    &sync.Mutex{},
 	}
 
@@ -43,7 +42,7 @@ func NewFileStorage(file string) (*FileStorage, error) {
 		return nil, errors.Wrap(err, "decode data")
 	}
 	if s.state.Feeds == nil {
-		s.state.Feeds = map[string]time.Time{}
+		s.state.Feeds = map[string]int64{}
 	}
 	return s, nil
 }
@@ -65,8 +64,8 @@ func (s *FileStorage) SaveChats(chats []int64) error {
 	return s.save()
 }
 
-// GetLastUpdate gets last update time of the feed.
-func (s *FileStorage) GetLastUpdate(feed string) time.Time {
+// GetLastUpdate gets last update id of the feed.
+func (s *FileStorage) GetLastUpdate(feed string) int64 {
 	s.mx.Lock()
 	defer s.mx.Unlock()
 
@@ -74,11 +73,11 @@ func (s *FileStorage) GetLastUpdate(feed string) time.Time {
 }
 
 // SaveLastUpdate saves last feed update.
-func (s *FileStorage) SaveLastUpdate(feed string, t time.Time) error {
+func (s *FileStorage) SaveLastUpdate(feed string, id int64) error {
 	s.mx.Lock()
 	defer s.mx.Unlock()
 
-	s.state.Feeds[feed] = t
+	s.state.Feeds[feed] = id
 	return s.save()
 }
 

@@ -11,7 +11,7 @@ import (
 
 func TestFeed(t *testing.T) {
 	storage := &testStorage{
-		time: time.Date(2020, 1, 1, 10, 0, 0, 0, time.UTC),
+		id: time.Date(2020, 1, 1, 10, 0, 0, 0, time.UTC).Unix(),
 	}
 
 	t.Run("fetch new item", func(t *testing.T) {
@@ -35,7 +35,7 @@ func TestFeed(t *testing.T) {
 		defer server.Close()
 
 		storage := &testStorage{
-			time: time.Date(2021, 1, 1, 10, 0, 0, 0, time.UTC),
+			id: time.Date(2021, 1, 1, 10, 0, 0, 0, time.UTC).Unix(),
 		}
 
 		f := NewRSSFeed(storage, server.URL)
@@ -116,13 +116,13 @@ func (s *testRSSServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 }
 
 type testStorage struct {
-	time time.Time
+	id int64
 }
 
-func (s *testStorage) GetLastUpdate(feed string) time.Time {
-	return s.time
+func (s *testStorage) GetLastUpdate(feed string) int64 {
+	return s.id
 }
 
-func (s *testStorage) SaveLastUpdate(feed string, t time.Time) error {
+func (s *testStorage) SaveLastUpdate(feed string, id int64) error {
 	return nil
 }

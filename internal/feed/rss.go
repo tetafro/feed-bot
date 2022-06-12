@@ -10,8 +10,8 @@ import (
 
 // Storage describes persistent datastorage.
 type Storage interface {
-	GetLastUpdate(feed string) int64
-	SaveLastUpdate(feed string, id int64) error
+	GetLastUpdate(feed string) time.Time
+	SaveLastUpdate(feed string, t time.Time) error
 }
 
 // RSSFeed reads data from RSS feed.
@@ -32,12 +32,12 @@ func NewRSSFeed(s Storage, url string) *RSSFeed {
 	}
 }
 
-// Fetch fetches new items from RSS feed.
+// Fetch fetches last item from RSS feed.
 func (f *RSSFeed) Fetch() ([]Item, error) {
 	last := f.storage.GetLastUpdate(f.url)
-	if last == 0 {
+	if last.IsZero() {
 		// First access
-		if err := f.storage.SaveLastUpdate(f.url, time.Now().Unix()); err != nil {
+		if err := f.storage.SaveLastUpdate(f.url, time.Now()); err != nil {
 			return nil, errors.Wrap(err, "save last update time")
 		}
 		return nil, nil
@@ -54,7 +54,7 @@ func (f *RSSFeed) Fetch() ([]Item, error) {
 	var items []Item // nolint: prealloc
 	for _, fitem := range feed.Items {
 		item := parse(fitem)
-		if item.Published.Unix() <= last {
+		if !item.Published.After(last) {
 			break
 		}
 		items = append(items, item)
@@ -63,7 +63,7 @@ func (f *RSSFeed) Fetch() ([]Item, error) {
 		return nil, nil
 	}
 
-	if err := f.storage.SaveLastUpdate(f.url, items[0].Published.Unix()); err != nil {
+	if err := f.storage.SaveLastUpdate(f.url, items[0].Published); err != nil {
 		return nil, errors.Wrap(err, "save last update time")
 	}
 	return items, nil

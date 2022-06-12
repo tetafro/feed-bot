@@ -1,6 +1,6 @@
 .PHONY: dep
 dep:
-	@ go mod tidy && go mod verify && go mod vendor
+	@ go mod tidy && go mod verify
 
 .PHONY: test
 test:

@@ -1,2 +1,6 @@
 /.git/
 /bin/
+/deploy/
+/Dockerfile
+/Makefile
+/README.md

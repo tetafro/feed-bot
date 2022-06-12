@@ -1,0 +1,37 @@
+---
+- name: Setup
+  hosts: all
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+    image: ghcr.io/tetafro/feed-bot:latest
+    tag: latest
+    container: feed-bot
+  tasks:
+    - name: Pull latest image
+      command: docker pull {{ image }}:{{ tag }}
+      changed_when: true
+
+    - name: Check if container is runnig
+      shell: docker ps | grep {{ container }}
+      register: container_running
+      changed_when: false
+      ignore_errors: true
+
+    - name: Stop current container
+      command: docker stop {{ container }}
+      changed_when: true
+      when: container_running.rc == 0
+
+    - name: Remove current container
+      command: docker rm {{ container }}
+      changed_when: true
+      when: container_running.rc == 0
+
+    - name: Run latest image
+      command: >
+        docker run -d
+        --restart unless-stopped
+        --volume ~/feed-bot:/data
+        --name {{ container }}
+        {{ image }}:{{ tag }} -f /data/config.yaml
+      changed_when: true

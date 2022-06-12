@@ -42,7 +42,7 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
 
-  lint:
+  lint-go:
     runs-on: ubuntu-latest
 
     steps:
@@ -59,8 +59,27 @@ jobs:
         with:
           version: v1.46
 
+  lint-ansible:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install linters
+        run: sudo apt install -y ansible ansible-lint yamllint
+
+      - name: Run yamllint
+        run: yamllint --format colored --strict ./deploy/*.yml
+
+      - name: Run ansible-lint
+        run: ansible-lint ./deploy/*.yml
+
   build:
-    needs: [test, cover, lint]
+    needs: [test, cover, lint-go, lint-ansible]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -84,3 +103,33 @@ jobs:
           context: .
           push: true
           tags: ghcr.io/tetafro/feed-bot:latest
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install ansible
+        run: |
+          sudo apt-add-repository -y ppa:ansible/ansible
+          sudo apt update -y
+          sudo apt install -y ansible ansible-lint
+
+      - name: Setup ssh
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" >> ~/.ssh/known_hosts
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 0600 ~/.ssh/id_ed25519
+
+      - name: Deploy new image
+        run: >
+          ansible-playbook
+          --private-key ~/.ssh/id_ed25519
+          --inventory '${{ secrets.SSH_HOST }}:${{ secrets.SSH_PORT }},'
+          --user ${{ secrets.SSH_USER }}
+          deploy/playbook.yml

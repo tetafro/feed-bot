@@ -3,3 +3,6 @@
 /vendor/
 /config.yaml
 /data.yaml
+
+# Ansible temporary files
+*.retry

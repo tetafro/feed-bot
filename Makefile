@@ -26,4 +26,12 @@ run:
 
 .PHONY: docker
 docker:
-	@ docker build -t tetafro/feed-bot .
+	@ docker build -t ghcr.io/tetafro/feed-bot .
+
+.PHONY: deploy
+deploy:
+	@ ansible-playbook
+	--private-key ~/.ssh/id_ed25519
+	--inventory "${SSH_SERVER},'
+	--user ${SSH_USER}
+	./playbook.yml

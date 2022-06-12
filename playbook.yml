@@ -1,9 +1,11 @@
 ---
+# Ansible playbook for service deployment. Pulls the latest image from the
+# container registry, and replaces currently running container (if exists).
 - name: Setup
   hosts: all
   vars:
     ansible_python_interpreter: /usr/bin/python3
-    image: ghcr.io/tetafro/feed-bot:latest
+    image: ghcr.io/tetafro/feed-bot
     tag: latest
     container: feed-bot
   tasks:

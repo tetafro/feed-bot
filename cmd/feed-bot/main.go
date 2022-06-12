@@ -3,13 +3,12 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
-
-	"github.com/pkg/errors"
 
 	"github.com/tetafro/feed-bot/internal/bot"
 	"github.com/tetafro/feed-bot/internal/feed"
@@ -39,12 +38,12 @@ func run() error {
 
 	conf, err := bot.ReadConfig(*configFile)
 	if err != nil {
-		return errors.Wrap(err, "failed to read config")
+		return fmt.Errorf("read config: %w", err)
 	}
 
 	fs, err := storage.NewFileStorage(conf.DataFile)
 	if err != nil {
-		return errors.Wrap(err, "failed to init state storage")
+		return fmt.Errorf("init state storage: %w", err)
 	}
 
 	var wg sync.WaitGroup
@@ -54,7 +53,7 @@ func run() error {
 	} else {
 		tg, err := notify.NewTelegramNotifier(conf.TelegramToken, fs)
 		if err != nil {
-			return errors.Wrap(err, "failed to init telegram notifier")
+			return fmt.Errorf("init telegram notifier: %w", err)
 		}
 		wg.Add(1)
 		go func() {

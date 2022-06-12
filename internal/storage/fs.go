@@ -2,12 +2,12 @@
 package storage
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"sync"
 	"time"
 
-	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 )
 
@@ -30,17 +30,17 @@ func NewFileStorage(file string) (*FileStorage, error) {
 	b, err := ioutil.ReadFile(s.file)
 	if os.IsNotExist(err) {
 		if err := s.save(); err != nil {
-			return nil, errors.Wrap(err, "init file")
+			return nil, fmt.Errorf("init file: %w", err)
 		}
 		return s, nil
 	}
 	if err != nil {
-		return nil, errors.Wrap(err, "read file")
+		return nil, fmt.Errorf("read file: %w", err)
 	}
 
 	// Unmarshal
 	if err = yaml.Unmarshal(b, &s.state); err != nil {
-		return nil, errors.Wrap(err, "decode data")
+		return nil, fmt.Errorf("decode data: %w", err)
 	}
 	if s.state.Feeds == nil {
 		s.state.Feeds = map[string]time.Time{}
@@ -86,11 +86,11 @@ func (s *FileStorage) SaveLastUpdate(feed string, t time.Time) error {
 func (s *FileStorage) save() error {
 	b, err := yaml.Marshal(s.state)
 	if err != nil {
-		return errors.Wrap(err, "encode data")
+		return fmt.Errorf("encode data: %w", err)
 	}
 	err = ioutil.WriteFile(s.file, b, 0o600)
 	if err != nil {
-		return errors.Wrap(err, "write data to file")
+		return fmt.Errorf("write data to file: %w", err)
 	}
 	return nil
 }

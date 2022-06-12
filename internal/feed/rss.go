@@ -2,10 +2,10 @@
 package feed
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/mmcdole/gofeed"
-	"github.com/pkg/errors"
 )
 
 // Storage describes persistent datastorage.
@@ -38,14 +38,14 @@ func (f *RSSFeed) Fetch() ([]Item, error) {
 	if last.IsZero() {
 		// First access
 		if err := f.storage.SaveLastUpdate(f.url, time.Now()); err != nil {
-			return nil, errors.Wrap(err, "save last update time")
+			return nil, fmt.Errorf("save last update time: %w", err)
 		}
 		return nil, nil
 	}
 
 	feed, err := f.parser.ParseURL(f.url)
 	if err != nil {
-		return nil, errors.Wrap(err, "parse url")
+		return nil, fmt.Errorf("parse url: %w", err)
 	}
 	if len(feed.Items) == 0 {
 		return nil, nil
@@ -64,7 +64,7 @@ func (f *RSSFeed) Fetch() ([]Item, error) {
 	}
 
 	if err := f.storage.SaveLastUpdate(f.url, items[0].Published); err != nil {
-		return nil, errors.Wrap(err, "save last update time")
+		return nil, fmt.Errorf("save last update time: %w", err)
 	}
 	return items, nil
 }

@@ -1,10 +1,11 @@
 package bot
 
 import (
+	"errors"
+	"fmt"
 	"io/ioutil"
 	"time"
 
-	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 )
 
@@ -26,12 +27,12 @@ const (
 func ReadConfig(file string) (Config, error) {
 	data, err := ioutil.ReadFile(file) // nolint: gosec
 	if err != nil {
-		return Config{}, errors.Wrap(err, "read file")
+		return Config{}, fmt.Errorf("read file: %w", err)
 	}
 
 	var conf Config
 	if err := yaml.Unmarshal(data, &conf); err != nil {
-		return Config{}, errors.Wrap(err, "unmarshal file")
+		return Config{}, fmt.Errorf("unmarshal file: %w", err)
 	}
 
 	if !conf.LogNotifier && conf.TelegramToken == "" {

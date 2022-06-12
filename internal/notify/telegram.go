@@ -3,11 +3,11 @@ package notify
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"sync"
 
 	tg "github.com/go-telegram-bot-api/telegram-bot-api"
-	"github.com/pkg/errors"
 
 	"github.com/tetafro/feed-bot/internal/feed"
 )
@@ -50,7 +50,7 @@ type TelegramNotifier struct {
 func NewTelegramNotifier(token string, st Storage) (*TelegramNotifier, error) {
 	api, err := tg.NewBotAPI(token)
 	if err != nil {
-		return nil, errors.Wrap(err, "init telegram API")
+		return nil, fmt.Errorf("init telegram API: %w", err)
 	}
 	cmd, err := api.GetUpdatesChan(tg.UpdateConfig{
 		Offset:  0,
@@ -58,7 +58,7 @@ func NewTelegramNotifier(token string, st Storage) (*TelegramNotifier, error) {
 		Timeout: 30,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "get commands channel")
+		return nil, fmt.Errorf("get commands channel: %w", err)
 	}
 
 	bot := &TelegramNotifier{

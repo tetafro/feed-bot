@@ -3,11 +3,11 @@ package bot
 import (
 	"bytes"
 	"context"
+	"errors"
 	"log"
 	"testing"
 	"time"
 
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/tetafro/feed-bot/internal/feed"
 )

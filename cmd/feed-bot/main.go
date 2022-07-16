@@ -49,7 +49,7 @@ func run() error {
 	if conf.LogNotifier {
 		notifier = notify.NewLogNotifier()
 	} else {
-		tg, err := notify.NewTelegramNotifier(conf.TelegramToken, fs)
+		tg, err := notify.NewTelegramNotifier(conf.TelegramToken, conf.TelegramChat)
 		if err != nil {
 			return fmt.Errorf("init telegram notifier: %w", err)
 		}

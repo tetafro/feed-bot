@@ -7,7 +7,6 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"sync"
 	"syscall"
 
 	"github.com/tetafro/feed-bot/internal/bot"
@@ -46,7 +45,6 @@ func run() error {
 		return fmt.Errorf("init state storage: %w", err)
 	}
 
-	var wg sync.WaitGroup
 	var notifier bot.Notifier
 	if conf.LogNotifier {
 		notifier = notify.NewLogNotifier()
@@ -55,11 +53,6 @@ func run() error {
 		if err != nil {
 			return fmt.Errorf("init telegram notifier: %w", err)
 		}
-		wg.Add(1)
-		go func() {
-			tg.ListenCommands(ctx)
-			wg.Done()
-		}()
 		notifier = tg
 	}
 
@@ -70,6 +63,5 @@ func run() error {
 
 	bot.New(notifier, feeds, conf.UpdateInterval).Run(ctx)
 
-	wg.Wait()
 	return nil
 }

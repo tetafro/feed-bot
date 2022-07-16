@@ -1,9 +1,7 @@
 package notify
 
 import (
-	"bytes"
 	"context"
-	"log"
 	"sort"
 	"sync"
 	"testing"
@@ -13,119 +11,6 @@ import (
 
 	"github.com/tetafro/feed-bot/internal/feed"
 )
-
-func TestTelegramNotifier_ListenCommands(t *testing.T) {
-	t.Run("add chat", func(t *testing.T) {
-		defer log.SetOutput(log.Writer())
-		defer log.SetFlags(log.Flags())
-
-		var buf bytes.Buffer
-		log.SetOutput(&buf)
-		log.SetFlags(0)
-
-		ctx, cancel := context.WithCancel(context.Background())
-
-		cmd := make(chan tg.Update)
-		api := &testTgAPI{}
-		tn := &TelegramNotifier{
-			api:     api,
-			cmd:     cmd,
-			chats:   map[int64]struct{}{},
-			mx:      &sync.Mutex{},
-			storage: &testStorage{},
-		}
-
-		go func() {
-			ee := []tg.MessageEntity{{
-				Type:   "bot_command",
-				Length: 6,
-			}}
-			cmd <- tg.Update{
-				Message: &tg.Message{
-					Chat:     &tg.Chat{ID: 100},
-					From:     &tg.User{UserName: "user"},
-					Text:     "/start",
-					Entities: &ee,
-				},
-			}
-			cancel()
-		}()
-
-		tn.ListenCommands(ctx)
-
-		assert.Equal(t, "[user] /start\n", buf.String())
-		assert.Equal(t, map[int64]struct{}{100: {}}, tn.chats)
-		assert.Equal(t, "Started", api.sent)
-	})
-
-	t.Run("remove chat", func(t *testing.T) {
-		defer log.SetOutput(log.Writer())
-		defer log.SetFlags(log.Flags())
-
-		var buf bytes.Buffer
-		log.SetOutput(&buf)
-		log.SetFlags(0)
-
-		ctx, cancel := context.WithCancel(context.Background())
-
-		cmd := make(chan tg.Update)
-		api := &testTgAPI{}
-		tn := &TelegramNotifier{
-			api:     api,
-			cmd:     cmd,
-			chats:   map[int64]struct{}{100: {}},
-			mx:      &sync.Mutex{},
-			storage: &testStorage{},
-		}
-
-		go func() {
-			ee := []tg.MessageEntity{{
-				Type:   "bot_command",
-				Length: 5,
-			}}
-			cmd <- tg.Update{
-				Message: &tg.Message{
-					Chat:     &tg.Chat{ID: 100},
-					From:     &tg.User{UserName: "user"},
-					Text:     "/stop",
-					Entities: &ee,
-				},
-			}
-			cancel()
-		}()
-
-		tn.ListenCommands(ctx)
-
-		assert.Equal(t, "[user] /stop\n", buf.String())
-		assert.Equal(t, map[int64]struct{}{}, tn.chats)
-		assert.Equal(t, "Stopped", api.sent)
-	})
-
-	t.Run("unknown command", func(t *testing.T) {
-		defer log.SetOutput(log.Writer())
-		defer log.SetFlags(log.Flags())
-
-		var buf bytes.Buffer
-		log.SetOutput(&buf)
-		log.SetFlags(0)
-
-		ctx, cancel := context.WithCancel(context.Background())
-
-		cmd := make(chan tg.Update)
-		tn := &TelegramNotifier{
-			cmd:   cmd,
-			chats: map[int64]struct{}{},
-			mx:    &sync.Mutex{},
-		}
-		go func() {
-			cmd <- tg.Update{}
-			cancel()
-		}()
-		tn.ListenCommands(ctx)
-
-		assert.Contains(t, buf.String(), "Unknown command")
-	})
-}
 
 func TestTelegramNotifier_Notify(t *testing.T) {
 	t.Run("send to all", func(t *testing.T) {
@@ -215,14 +100,4 @@ func (t *testTgAPI) Send(msg tg.Chattable) (tg.Message, error) {
 		t.sent = m.Caption + "|" + m.BaseFile.FileID
 	}
 	return tg.Message{}, nil
-}
-
-type testStorage struct{}
-
-func (s *testStorage) GetChats() []int64 {
-	return []int64{100}
-}
-
-func (s *testStorage) SaveChats(ids []int64) error {
-	return nil
 }

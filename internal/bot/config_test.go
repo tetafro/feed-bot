@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -66,6 +67,6 @@ func TestReadConfig(t *testing.T) {
 
 	t.Run("non-existing file", func(t *testing.T) {
 		_, err := ReadConfig("abc.yaml")
-		assert.True(t, os.IsNotExist(err))
+		assert.True(t, errors.Is(err, os.ErrNotExist))
 	})
 }

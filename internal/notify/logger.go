@@ -17,6 +17,7 @@ func NewLogNotifier() *LogNotifier {
 }
 
 // Notify prints item to stdout.
-func (ln *LogNotifier) Notify(_ context.Context, item feed.Item) {
+func (ln *LogNotifier) Notify(_ context.Context, item feed.Item) error {
 	log.Printf("[notify] New item: %s", item)
+	return nil
 }

@@ -13,7 +13,7 @@ import (
 
 // Notifier describes how clients are notified about new items.
 type Notifier interface {
-	Notify(context.Context, feed.Item)
+	Notify(context.Context, feed.Item) error
 }
 
 // Feed is a source of data.
@@ -52,7 +52,9 @@ func (b *Bot) Run(ctx context.Context) {
 	}()
 
 	for item := range items {
-		b.notifier.Notify(ctx, item)
+		if err := b.notifier.Notify(ctx, item); err != nil {
+			log.Printf("Failed to send notification: %v", err)
+		}
 	}
 }
 

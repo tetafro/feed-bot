@@ -136,7 +136,7 @@ func TestTelegramNotifier_Notify(t *testing.T) {
 			mx:    &sync.Mutex{},
 		}
 
-		tn.Notify(context.Background(), feed.Item{
+		_ = tn.Notify(context.Background(), feed.Item{
 			Link: "http://example.com/content/",
 		})
 
@@ -151,7 +151,7 @@ func TestTelegramNotifier_Notify(t *testing.T) {
 			mx:    &sync.Mutex{},
 		}
 
-		tn.Notify(context.Background(), feed.Item{
+		_ = tn.Notify(context.Background(), feed.Item{
 			Link: "http://example.com/content/",
 		})
 

@@ -96,7 +96,7 @@ func (t *TelegramNotifier) ListenCommands(ctx context.Context) {
 }
 
 // Notify notifies all connected client about new event.
-func (t *TelegramNotifier) Notify(ctx context.Context, item feed.Item) {
+func (t *TelegramNotifier) Notify(ctx context.Context, item feed.Item) error {
 	t.mx.Lock()
 	chats := mapToSlice(t.chats)
 	t.mx.Unlock()
@@ -121,6 +121,9 @@ func (t *TelegramNotifier) Notify(ctx context.Context, item feed.Item) {
 	for i := 0; i < concurrencyLevel; i++ {
 		<-sema
 	}
+
+	// TODO: Return real error
+	return nil
 }
 
 func (t *TelegramNotifier) handleCommand(upd tg.Update) error {

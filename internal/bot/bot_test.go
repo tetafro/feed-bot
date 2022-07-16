@@ -85,8 +85,9 @@ type testNotifier struct {
 	items []feed.Item
 }
 
-func (n *testNotifier) Notify(_ context.Context, item feed.Item) {
+func (n *testNotifier) Notify(_ context.Context, item feed.Item) error {
 	n.items = append(n.items, item)
+	return nil
 }
 
 type testFeed struct {

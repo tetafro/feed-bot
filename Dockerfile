@@ -1,4 +1,4 @@
-FROM golang:1.16-alpine AS build
+FROM golang:1.18-alpine3.16 AS build
 
 WORKDIR /build
 
@@ -8,7 +8,7 @@ COPY . .
 
 RUN go build -o ./bin/feed-bot ./cmd/feed-bot
 
-FROM alpine:3.9
+FROM alpine:3.16
 
 WORKDIR /app
 

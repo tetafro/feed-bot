@@ -13,8 +13,28 @@ cover:
 	@ go tool cover -html=./tmp/cover.out
 
 .PHONY: lint
-lint:
-	@ golangci-lint run --fix
+lint: go-lint yamllint ansible-lint
+
+.PHONY: go-lint
+go-lint:
+	@ echo '----------------'
+	@ echo 'Running golangci-lint'
+	@ echo '----------------'
+	@ golangci-lint run --fix && echo OK
+
+.PHONY: yamllint
+yamllint:
+	@ echo '----------------'
+	@ echo 'Running yamllint'
+	@ echo '----------------'
+	@ yamllint --format colored --strict ./playbook.yml && echo OK
+
+.PHONY: ansible-lint
+ansible-lint:
+	@ echo '--------------------'
+	@ echo 'Running ansible-lint'
+	@ echo '--------------------'
+	@ ansible-lint ./playbook.yml && echo OK
 
 .PHONY: build
 build:

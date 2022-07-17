@@ -18,7 +18,7 @@
 
     - name: Ensure configs exist
       file:
-        path: "{{ item }}"
+        path: "{{ dir }}/{{ item }}"
         state: file
         mode: 0666
       with_items:

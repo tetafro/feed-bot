@@ -10,30 +10,21 @@
     container: feed-bot
   tasks:
     - name: Pull latest image
-      command: docker pull {{ image }}:{{ tag }}
-      changed_when: true
-
-    - name: Check if container is runnig
-      shell: docker ps | grep {{ container }}
-      register: container_running
-      changed_when: false
-      ignore_errors: true
-
-    - name: Stop current container
-      command: docker stop {{ container }}
-      changed_when: true
-      when: container_running.rc == 0
+      docker_image:
+        name: "{{ image }}:{{ tag }}"
+        source: pull
 
     - name: Remove current container
-      command: docker rm {{ container }}
-      changed_when: true
-      when: container_running.rc == 0
+      docker_container:
+        name: "{{ container }}"
+        state: absent
 
-    - name: Run latest image
-      command: >
-        docker run --detach
-        --restart unless-stopped
-        --volume ~/feed-bot:/data
-        --name {{ container }}
-        {{ image }}:{{ tag }} -f /data/config.yaml
-      changed_when: true
+    - name: Run new container
+      docker_container:
+        name: "{{ container }}"
+        image: "{{ image }}:{{ tag }}"
+        state: started
+        restart_policy: unless-stopped
+        volumes:
+          - "~/feed-bot:/data"
+        command: -f /data/config.yaml

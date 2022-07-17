@@ -40,5 +40,8 @@ func NewTelegramNotifier(token, chat string) (*TelegramNotifier, error) {
 func (t *TelegramNotifier) Notify(ctx context.Context, item feed.Item) error {
 	msg := tg.NewMessageToChannel(t.chat, item.Link)
 	_, err := t.api.Send(msg)
-	return fmt.Errorf("send api request: %w", err)
+	if err != nil {
+		return fmt.Errorf("send api request: %w", err)
+	}
+	return nil
 }

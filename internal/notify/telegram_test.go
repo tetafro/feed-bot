@@ -18,7 +18,7 @@ func TestTelegramNotifier_Notify(t *testing.T) {
 
 	t.Run("successful send", func(t *testing.T) {
 		api := &testTgAPI{}
-		tn := &TelegramNotifier{api: api, chat: 100}
+		tn := &TelegramNotifier{api: api, chat: "@chat_name"}
 
 		err := tn.Notify(context.Background(), item)
 		assert.NoError(t, err)
@@ -27,7 +27,7 @@ func TestTelegramNotifier_Notify(t *testing.T) {
 
 	t.Run("error from api", func(t *testing.T) {
 		api := &testTgAPI{err: errors.New("internal error")}
-		tn := &TelegramNotifier{api: api, chat: 100}
+		tn := &TelegramNotifier{api: api, chat: "@chat_name"}
 
 		err := tn.Notify(context.Background(), item)
 		assert.EqualError(t, err, "internal error")

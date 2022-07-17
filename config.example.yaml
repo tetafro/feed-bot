@@ -1,4 +1,5 @@
 telegram_token: "123456789:AAAAAAAAAAAAAAAAAAAAAAAAAAAAA-AAAAA"
+telegram_chat: my_chat
 update_interval: 3h
 feeds:
   - "https://example.com/rss.xml"

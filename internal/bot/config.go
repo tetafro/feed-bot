@@ -12,7 +12,7 @@ import (
 // Config represents application configuration.
 type Config struct {
 	TelegramToken  string        `yaml:"telegram_token"`
-	TelegramChat   int64         `yaml:"telegram_chat"`
+	TelegramChat   string        `yaml:"telegram_chat"`
 	UpdateInterval time.Duration `yaml:"update_interval"`
 	DataFile       string        `yaml:"data_file"`
 	Feeds          []string      `yaml:"feeds"`

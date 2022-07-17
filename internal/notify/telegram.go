@@ -19,11 +19,11 @@ type API interface {
 // messages to a public chat.
 type TelegramNotifier struct {
 	api  API
-	chat int64
+	chat string
 }
 
 // NewTelegramNotifier creates a new bot.
-func NewTelegramNotifier(token string, chat int64) (*TelegramNotifier, error) {
+func NewTelegramNotifier(token, chat string) (*TelegramNotifier, error) {
 	api, err := tg.NewBotAPI(token)
 	if err != nil {
 		return nil, fmt.Errorf("init telegram API: %w", err)
@@ -31,14 +31,14 @@ func NewTelegramNotifier(token string, chat int64) (*TelegramNotifier, error) {
 
 	bot := &TelegramNotifier{
 		api:  api,
-		chat: chat,
+		chat: "@" + chat,
 	}
 	return bot, nil
 }
 
 // Notify sends a message to the Telegram chat.
 func (t *TelegramNotifier) Notify(ctx context.Context, item feed.Item) error {
-	msg := tg.NewMessage(t.chat, item.Link)
+	msg := tg.NewMessageToChannel(t.chat, item.Link)
 	_, err := t.api.Send(msg)
 	return fmt.Errorf("send api request: %w", err)
 }

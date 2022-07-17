@@ -30,7 +30,7 @@ func TestTelegramNotifier_Notify(t *testing.T) {
 		tn := &TelegramNotifier{api: api, chat: "@chat_name"}
 
 		err := tn.Notify(context.Background(), item)
-		assert.EqualError(t, err, "internal error")
+		assert.EqualError(t, err, "send api request: internal error")
 	})
 }
 

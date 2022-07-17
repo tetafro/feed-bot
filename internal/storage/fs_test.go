@@ -20,9 +20,7 @@ func TestNewFileStorage(t *testing.T) {
 		)
 		defer os.Remove(file) // nolint: errcheck
 
-		data := []byte("chats:\n" +
-			"  - 1\n" +
-			"feeds:\n" +
+		data := []byte("feeds:\n" +
 			"http://example.com/feed: 2021-03-20T05:00:00Z\n")
 		assert.NoError(t, ioutil.WriteFile(file, data, 0o600))
 
@@ -51,7 +49,7 @@ func TestNewFileStorage(t *testing.T) {
 		b, err := ioutil.ReadFile(fs.file)
 		assert.NoError(t, err)
 
-		expected := "chats: []\nfeeds: {}\n"
+		expected := "feeds: {}\n"
 		assert.Equal(t, expected, string(b))
 	})
 
@@ -90,55 +88,9 @@ func TestNewFileStorage(t *testing.T) {
 	})
 }
 
-func TestFileStorage_GetChats(t *testing.T) {
-	fs := &FileStorage{
-		state: State{Chats: []int64{}},
-		mx:    &sync.Mutex{},
-	}
-
-	assert.Len(t, fs.GetChats(), 0)
-
-	chats := []int64{1, 2, 3}
-	fs.state.Chats = chats
-	assert.Equal(t, chats, fs.GetChats())
-}
-
-func TestFileStorage_SaveChats(t *testing.T) {
-	file := filepath.Join(
-		os.TempDir(),
-		fmt.Sprintf("feed-bot-testing-%d", time.Now().Nanosecond()),
-	)
-	defer os.Remove(file) // nolint: errcheck
-
-	fs, err := NewFileStorage(file)
-	assert.NoError(t, err)
-
-	chats := []int64{1, 2, 3}
-	assert.NoError(t, fs.SaveChats(chats))
-	assert.Equal(t, chats, fs.state.Chats)
-	assertFile(t, fs.file,
-		"chats:\n"+
-			"- 1\n"+
-			"- 2\n"+
-			"- 3\n"+
-			"feeds: {}\n")
-
-	chats = []int64{1, 2, 3, 4, 5}
-	assert.NoError(t, fs.SaveChats(chats))
-	assert.Equal(t, chats, fs.state.Chats)
-	assertFile(t, fs.file,
-		"chats:\n"+
-			"- 1\n"+
-			"- 2\n"+
-			"- 3\n"+
-			"- 4\n"+
-			"- 5\n"+
-			"feeds: {}\n")
-}
-
 func TestFileStorage_GetLastUpdate(t *testing.T) {
 	fs := &FileStorage{
-		state: State{Feeds: map[string]time.Time{}},
+		state: state{Feeds: map[string]time.Time{}},
 		mx:    &sync.Mutex{},
 	}
 
@@ -164,14 +116,12 @@ func TestFileStorage_SaveLastUpdate(t *testing.T) {
 
 	assert.NoError(t, fs.SaveLastUpdate("feed", ts1))
 	assertFile(t, fs.file,
-		"chats: []\n"+
-			"feeds:\n"+
+		"feeds:\n"+
 			"  feed: 2000-01-01T00:00:00Z\n")
 
 	assert.NoError(t, fs.SaveLastUpdate("feed", ts2))
 	assertFile(t, fs.file,
-		"chats: []\n"+
-			"feeds:\n"+
+		"feeds:\n"+
 			"  feed: 2000-01-01T00:00:01Z\n")
 }
 

@@ -14,15 +14,20 @@ import (
 // FileStorage is a storage that uses plain text file for storing data.
 type FileStorage struct {
 	file  string
-	state State
+	state state
 	mx    *sync.Mutex
+}
+
+// state is a representation of application state.
+type state struct {
+	Feeds map[string]time.Time `yaml:"feeds"`
 }
 
 // NewFileStorage creates new file storage.
 func NewFileStorage(file string) (*FileStorage, error) {
 	s := &FileStorage{
 		file:  file,
-		state: State{Feeds: map[string]time.Time{}},
+		state: state{Feeds: map[string]time.Time{}},
 		mx:    &sync.Mutex{},
 	}
 
@@ -46,23 +51,6 @@ func NewFileStorage(file string) (*FileStorage, error) {
 		s.state.Feeds = map[string]time.Time{}
 	}
 	return s, nil
-}
-
-// GetChats gets list of chat IDs.
-func (s *FileStorage) GetChats() []int64 {
-	s.mx.Lock()
-	defer s.mx.Unlock()
-
-	return s.state.Chats
-}
-
-// SaveChats saves list of chat IDs.
-func (s *FileStorage) SaveChats(chats []int64) error {
-	s.mx.Lock()
-	defer s.mx.Unlock()
-
-	s.state.Chats = chats
-	return s.save()
 }
 
 // GetLastUpdate gets last update time of the feed.

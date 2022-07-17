@@ -8,7 +8,23 @@
     image: ghcr.io/tetafro/feed-bot
     tag: latest
     container: feed-bot
+    dir: "~/feed-bot"
   tasks:
+    - name: Create directory for docker volume
+      file:
+        path: "{{ dir }}"
+        state: directory
+        mode: 0755
+
+    - name: Ensure configs exist
+      file:
+        path: "{{ item }}"
+        state: file
+        mode: 0666
+      with_items:
+        - config.yaml
+        - data.yaml
+
     - name: Pull latest image
       docker_image:
         name: "{{ image }}:{{ tag }}"
@@ -26,5 +42,5 @@
         state: started
         restart_policy: unless-stopped
         volumes:
-          - "~/feed-bot:/data"
+          - "{{ dir }}:/data"
         command: -f /data/config.yaml

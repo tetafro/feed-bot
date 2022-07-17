@@ -15,8 +15,6 @@ import (
 	"github.com/tetafro/feed-bot/internal/storage"
 )
 
-var configFile = flag.String("f", "./config.yaml", "path to config file")
-
 func main() {
 	log.Print("Starting...")
 	if err := run(); err != nil {
@@ -26,6 +24,7 @@ func main() {
 }
 
 func run() error {
+	configFile := flag.String("f", "./config.yaml", "path to config file")
 	flag.Parse()
 
 	ctx, cancel := signal.NotifyContext(

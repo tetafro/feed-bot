@@ -31,7 +31,7 @@
 
     - name: Run latest image
       command: >
-        docker run -d
+        docker run --detach
         --restart unless-stopped
         --volume ~/feed-bot:/data
         --name {{ container }}

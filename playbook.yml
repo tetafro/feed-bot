@@ -41,7 +41,7 @@
         name: "{{ container }}"
         image: "{{ image }}:{{ tag }}"
         state: started
-        restart_policy: unless-stopped
+        restart_policy: always
         volumes:
           - "{{ dir }}:/data"
         command: -f /data/config.yaml

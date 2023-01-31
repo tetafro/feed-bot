@@ -51,7 +51,7 @@ func (f *RSSFeed) Fetch() ([]Item, error) {
 		return nil, nil
 	}
 
-	var items []Item // nolint: prealloc
+	var items []Item //nolint: prealloc
 	for _, fitem := range feed.Items {
 		item := parse(fitem)
 		if !item.Published.After(last) {

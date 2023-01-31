@@ -17,7 +17,7 @@ func TestReadConfig(t *testing.T) {
 		os.TempDir(),
 		fmt.Sprintf("feed-bot-testing-%d", time.Now().Nanosecond()),
 	)
-	defer os.Remove(f) // nolint: errcheck
+	defer os.Remove(f) //nolint: errcheck
 
 	t.Run("valid config", func(t *testing.T) {
 		data := []byte("telegram_token: \"123456789:AAAAAAAAAAAAAAAAAAAAAAAAAAAAA-AAAAA\"\n" +

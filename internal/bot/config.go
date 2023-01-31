@@ -24,9 +24,9 @@ const (
 	defaultDataFile       = "./data.yaml"
 )
 
-// ReadConfig returns configuration populated from environment variables.
+// ReadConfig returns configuration populated from the config file.
 func ReadConfig(file string) (Config, error) {
-	data, err := os.ReadFile(file) // nolint: gosec
+	data, err := os.ReadFile(file) //nolint:gosec
 	if err != nil {
 		return Config{}, fmt.Errorf("read file: %w", err)
 	}

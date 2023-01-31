@@ -2,7 +2,6 @@ package storage
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sync"
@@ -22,14 +21,14 @@ func TestNewFileStorage(t *testing.T) {
 
 		data := []byte("feeds:\n" +
 			"http://example.com/feed: 2021-03-20T05:00:00Z\n")
-		assert.NoError(t, ioutil.WriteFile(file, data, 0o600))
+		assert.NoError(t, os.WriteFile(file, data, 0o600))
 
 		fs, err := NewFileStorage(file)
 		assert.NoError(t, err)
 		assert.Equal(t, file, fs.file)
 		assert.NotNil(t, fs.mx)
 
-		b, err := ioutil.ReadFile(fs.file)
+		b, err := os.ReadFile(fs.file)
 		assert.NoError(t, err)
 		assert.Equal(t, data, b)
 	})
@@ -46,7 +45,7 @@ func TestNewFileStorage(t *testing.T) {
 		assert.Equal(t, file, fs.file)
 		assert.NotNil(t, fs.mx)
 
-		b, err := ioutil.ReadFile(fs.file)
+		b, err := os.ReadFile(fs.file)
 		assert.NoError(t, err)
 
 		expected := "feeds: {}\n"
@@ -60,14 +59,14 @@ func TestNewFileStorage(t *testing.T) {
 		)
 		defer os.Remove(file) //nolint: errcheck
 
-		assert.NoError(t, ioutil.WriteFile(file, []byte(""), 0o600))
+		assert.NoError(t, os.WriteFile(file, []byte(""), 0o600))
 
 		fs, err := NewFileStorage(file)
 		assert.NoError(t, err)
 		assert.Equal(t, file, fs.file)
 		assert.NotNil(t, fs.mx)
 
-		b, err := ioutil.ReadFile(fs.file)
+		b, err := os.ReadFile(fs.file)
 		assert.NoError(t, err)
 
 		assert.Equal(t, "", string(b))
@@ -81,7 +80,7 @@ func TestNewFileStorage(t *testing.T) {
 		defer os.Remove(file) //nolint: errcheck
 
 		data := []byte("]")
-		assert.NoError(t, ioutil.WriteFile(file, data, 0o600))
+		assert.NoError(t, os.WriteFile(file, data, 0o600))
 
 		_, err := NewFileStorage(file)
 		assert.EqualError(t, err, "decode data: yaml: did not find expected node content")
@@ -126,7 +125,7 @@ func TestFileStorage_SaveLastUpdate(t *testing.T) {
 }
 
 func assertFile(t *testing.T, file, content string) {
-	b, err := ioutil.ReadFile(file) //nolint: gosec
+	b, err := os.ReadFile(file) //nolint: gosec
 	assert.NoError(t, err)
 	assert.Equal(t, content, string(b))
 }

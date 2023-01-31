@@ -3,7 +3,6 @@ package bot
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -24,7 +23,7 @@ func TestReadConfig(t *testing.T) {
 			"update_interval: 3h\n" +
 			"data_file: ./data.yaml\n" +
 			"feeds: [\"https://example.com/rss.xml\"]\n")
-		assert.NoError(t, ioutil.WriteFile(f, data, 0o600))
+		assert.NoError(t, os.WriteFile(f, data, 0o600))
 
 		conf, err := ReadConfig(f)
 		assert.NoError(t, err)
@@ -42,7 +41,7 @@ func TestReadConfig(t *testing.T) {
 		data := []byte("feeds: [\"https://example.com/rss.xml\"]\n" +
 			"data_file: ./data.yaml\n" +
 			"log_notifier: true\n")
-		assert.NoError(t, ioutil.WriteFile(f, data, 0o600))
+		assert.NoError(t, os.WriteFile(f, data, 0o600))
 
 		conf, err := ReadConfig(f)
 		assert.NoError(t, err)
@@ -58,7 +57,7 @@ func TestReadConfig(t *testing.T) {
 
 	t.Run("invalid config", func(t *testing.T) {
 		data := []byte(`]`)
-		assert.NoError(t, ioutil.WriteFile(f, data, 0o600))
+		assert.NoError(t, os.WriteFile(f, data, 0o600))
 
 		_, err := ReadConfig(f)
 		assert.EqualError(t, err,

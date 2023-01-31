@@ -3,7 +3,6 @@ package storage
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"sync"
 	"time"
@@ -32,7 +31,7 @@ func NewFileStorage(file string) (*FileStorage, error) {
 	}
 
 	// Read or init
-	b, err := ioutil.ReadFile(s.file)
+	b, err := os.ReadFile(s.file)
 	if os.IsNotExist(err) {
 		if err := s.save(); err != nil {
 			return nil, fmt.Errorf("init file: %w", err)
@@ -76,7 +75,7 @@ func (s *FileStorage) save() error {
 	if err != nil {
 		return fmt.Errorf("encode data: %w", err)
 	}
-	err = ioutil.WriteFile(s.file, b, 0o600)
+	err = os.WriteFile(s.file, b, 0o600)
 	if err != nil {
 		return fmt.Errorf("write data to file: %w", err)
 	}

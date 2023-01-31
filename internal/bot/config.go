@@ -3,7 +3,7 @@ package bot
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"time"
 
 	"gopkg.in/yaml.v2"
@@ -26,7 +26,7 @@ const (
 
 // ReadConfig returns configuration populated from environment variables.
 func ReadConfig(file string) (Config, error) {
-	data, err := ioutil.ReadFile(file) // nolint: gosec
+	data, err := os.ReadFile(file) // nolint: gosec
 	if err != nil {
 		return Config{}, fmt.Errorf("read file: %w", err)
 	}

@@ -34,7 +34,7 @@ ansible-lint:
 	@ echo '--------------------'
 	@ echo 'Running ansible-lint'
 	@ echo '--------------------'
-	@ ansible-lint ./playbook.yml && echo OK
+	@ ansible-lint -q ./playbook.yml && echo OK
 
 .PHONY: build
 build:

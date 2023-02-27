@@ -14,13 +14,13 @@
       file:
         path: "{{ dir }}"
         state: directory
-        mode: 0755
+        mode: "0755"
 
     - name: Ensure configs exist
       file:
         path: "{{ dir }}/{{ item }}"
         state: file
-        mode: 0666
+        mode: "0666"
       with_items:
         - config.yaml
         - data.yaml

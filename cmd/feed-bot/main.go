@@ -1,3 +1,4 @@
+// Telegram bot that reads RSS feeds and sends them to users.
 package main
 
 import (

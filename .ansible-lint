@@ -1,0 +1,4 @@
+skip_list:
+  - fqcn
+  - fqcn[action]
+  - fqcn[action-core]

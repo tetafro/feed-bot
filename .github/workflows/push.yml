@@ -126,10 +126,13 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           chmod 0600 ~/.ssh/id_ed25519
 
+      - name: Setup ansible vault
+        run: echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > vault-secret.txt
+
       - name: Deploy new image
         run: >
-          ANSIBLE_VAULT_PASSWORD="${{ secrets.ANSIBLE_VAULT_PASSWORD }}"
           ansible-playbook
+          --vault-password-file vault-secret.txt
           --private-key ~/.ssh/id_ed25519
           --inventory '${{ secrets.SSH_HOST }}:${{ secrets.SSH_PORT }},'
           --user ${{ secrets.SSH_USER }}

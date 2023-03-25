@@ -50,8 +50,8 @@ docker:
 
 .PHONY: deploy
 deploy:
-	@ ansible-playbook
-	--private-key ~/.ssh/id_ed25519
-	--inventory '${SSH_SERVER},'
-	--user ${SSH_USER}
+	@ ansible-playbook \
+	--private-key ~/.ssh/id_ed25519 \
+	--inventory '${SSH_SERVER},' \
+	--user ${SSH_USER} \
 	./playbook.yml

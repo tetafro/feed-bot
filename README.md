@@ -30,3 +30,22 @@ SSH_SERVER=10.0.0.1:22 \
 SSH_USER=user \
 make deploy
 ```
+
+## Encrypted config
+
+Encrypt
+```sh
+echo "password" > vault-secret.txt
+ansible-vault encrypt \
+    --vault-password-file vault-secret.txt \
+    --output config.yaml.vault \
+    config.yaml
+```
+
+Edit
+```sh
+EDITOR='code --wait' \
+ansible-vault edit \
+    --vault-password-file vault-secret.txt \
+    config.yaml.vault
+```

@@ -16,14 +16,18 @@
         state: directory
         mode: "0755"
 
-    - name: Ensure configs exist
+    - name: Copy config # noqa args[module]
+      copy:
+        src: config.yaml.vault
+        dest: "{{ dir }}/config.yaml"
+        decrypt: true
+        mode: "0444"
+
+    - name: Ensure data file exists
       file:
-        path: "{{ dir }}/{{ item }}"
+        path: "{{ dir }}/data.yaml"
         state: file
         mode: "0666"
-      with_items:
-        - config.yaml
-        - data.yaml
 
     - name: Pull latest image
       docker_image:

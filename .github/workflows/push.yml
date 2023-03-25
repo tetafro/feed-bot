@@ -128,6 +128,7 @@ jobs:
 
       - name: Deploy new image
         run: >
+          ANSIBLE_VAULT_PASSWORD="${{ secrets.ANSIBLE_VAULT_PASSWORD }}"
           ansible-playbook
           --private-key ~/.ssh/id_ed25519
           --inventory '${{ secrets.SSH_HOST }}:${{ secrets.SSH_PORT }},'

@@ -18,6 +18,7 @@ type Notifier interface {
 
 // Feed is a source of data.
 type Feed interface {
+	Name() string
 	Fetch() ([]feed.Item, error)
 }
 
@@ -66,7 +67,7 @@ func (b *Bot) runFetches(ctx context.Context, f Feed, out chan feed.Item) {
 		case <-t.C:
 			items, err := f.Fetch()
 			if err != nil {
-				log.Printf("Failed to fetch items: %v", err)
+				log.Printf("Failed to fetch items [%s]: %v", f.Name(), err)
 				continue
 			}
 			for _, item := range items {

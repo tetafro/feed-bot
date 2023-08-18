@@ -32,6 +32,11 @@ func NewRSSFeed(s Storage, url string) *RSSFeed {
 	}
 }
 
+// Name returns feed's URL for identification.
+func (f *RSSFeed) Name() string {
+	return f.url
+}
+
 // Fetch fetches last item from RSS feed.
 func (f *RSSFeed) Fetch() ([]Item, error) {
 	last := f.storage.GetLastUpdate(f.url)

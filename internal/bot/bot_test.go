@@ -77,7 +77,7 @@ func TestBot_Run(t *testing.T) {
 			{Link: "One"}, {Link: "Two"},
 		}
 		assert.ElementsMatch(t, expected, n.items)
-		assert.Equal(t, "Failed to fetch items: fail\n", buf.String())
+		assert.Equal(t, "Failed to fetch items [test-name]: fail\n", buf.String())
 	})
 }
 
@@ -94,6 +94,10 @@ type testFeed struct {
 	items []feed.Item
 	err   error
 	done  bool
+}
+
+func (f *testFeed) Name() string {
+	return "test-name"
 }
 
 func (f *testFeed) Fetch() ([]feed.Item, error) {

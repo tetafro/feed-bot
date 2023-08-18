@@ -37,7 +37,7 @@ func NewTelegramNotifier(token, chat string) (*TelegramNotifier, error) {
 }
 
 // Notify sends a message to the Telegram chat.
-func (t *TelegramNotifier) Notify(ctx context.Context, item feed.Item) error {
+func (t *TelegramNotifier) Notify(_ context.Context, item feed.Item) error {
 	msg := tg.NewMessageToChannel(t.chat, item.Link)
 	_, err := t.api.Send(msg)
 	if err != nil {

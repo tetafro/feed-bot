@@ -9,7 +9,6 @@ linters:
     - bodyclose
     - cyclop
     - deadcode
-    - depguard
     - dogsled
     - durationcheck
     - errcheck

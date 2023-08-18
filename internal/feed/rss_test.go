@@ -89,7 +89,7 @@ type testRSSServer struct {
 	err  bool
 }
 
-func (s *testRSSServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+func (s *testRSSServer) ServeHTTP(w http.ResponseWriter, _ *http.Request) {
 	if s.err {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -119,10 +119,10 @@ type testStorage struct {
 	time time.Time
 }
 
-func (s *testStorage) GetLastUpdate(feed string) time.Time {
+func (s *testStorage) GetLastUpdate(_ string) time.Time {
 	return s.time
 }
 
-func (s *testStorage) SaveLastUpdate(feed string, t time.Time) error {
+func (s *testStorage) SaveLastUpdate(_ string, _ time.Time) error {
 	return nil
 }

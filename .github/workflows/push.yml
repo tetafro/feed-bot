@@ -75,6 +75,9 @@ jobs:
       - name: Run yamllint
         run: yamllint --format colored --strict ./playbook.yml
 
+      - name: Setup ansible vault
+        run: echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > .vault_pass.txt
+
       - name: Run ansible-lint
         run: ansible-lint ./playbook.yml
 

@@ -51,7 +51,7 @@ docker:
 .PHONY: deploy
 deploy:
 	@ ansible-playbook \
-	--vault-password-file vault-secret.txt \
+	--vault-password-file .vault_pass.txt \
 	--private-key ~/.ssh/id_ed25519 \
 	--inventory '${SSH_SERVER},' \
 	--user ${SSH_USER} \

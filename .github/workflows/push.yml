@@ -127,12 +127,12 @@ jobs:
           chmod 0600 ~/.ssh/id_ed25519
 
       - name: Setup ansible vault
-        run: echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > vault-secret.txt
+        run: echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > .vault_pass.txt
 
       - name: Deploy new image
         run: >
           ansible-playbook
-          --vault-password-file vault-secret.txt
+          --vault-password-file .vault_pass.txt
           --private-key ~/.ssh/id_ed25519
           --inventory '${{ secrets.SSH_HOST }}:${{ secrets.SSH_PORT }},'
           --user ${{ secrets.SSH_USER }}

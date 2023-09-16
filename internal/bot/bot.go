@@ -60,21 +60,28 @@ func (b *Bot) Run(ctx context.Context) {
 }
 
 func (b *Bot) runFetches(ctx context.Context, f Feed, out chan feed.Item) {
+	// Run first fetch when started
+	b.fetch(f, out)
+
 	t := time.NewTicker(b.interval)
 	defer t.Stop()
 	for {
 		select {
 		case <-t.C:
-			items, err := f.Fetch()
-			if err != nil {
-				log.Printf("Failed to fetch items [%s]: %v", f.Name(), err)
-				continue
-			}
-			for _, item := range items {
-				out <- item
-			}
+			b.fetch(f, out)
 		case <-ctx.Done():
 			return
 		}
+	}
+}
+
+func (b *Bot) fetch(f Feed, out chan feed.Item) {
+	items, err := f.Fetch()
+	if err != nil {
+		log.Printf("Failed to fetch items [%s]: %v", f.Name(), err)
+		return
+	}
+	for _, item := range items {
+		out <- item
 	}
 }

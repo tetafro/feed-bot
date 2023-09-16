@@ -48,4 +48,4 @@
         restart_policy: always
         volumes:
           - "{{ dir }}:/data"
-        command: -f /data/config.yaml
+        command: -config /data/config.yaml

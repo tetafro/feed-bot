@@ -25,7 +25,7 @@ func main() {
 }
 
 func run() error {
-	configFile := flag.String("f", "./config.yaml", "path to config file")
+	configFile := flag.String("config", "./config.yaml", "path to config file")
 	flag.Parse()
 
 	ctx, cancel := signal.NotifyContext(

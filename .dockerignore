@@ -1,3 +1,4 @@
 *
-!/bin/
-!/config.yaml
+!/*.go
+!/go.sum
+!/go.mod

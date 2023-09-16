@@ -8,7 +8,7 @@ Telegram bot that reads RSS feeds and sends them to users.
 
 ## Build and run
 
-Create bot and get Telegram API token from the bot called `@botfather`.
+Create a bot and get Telegram API token from the bot called `@botfather`.
 
 Copy and populate config
 ```sh

@@ -16,13 +16,13 @@ type API interface {
 }
 
 // TelegramNotifier uses Telegram API to sends notifications as Telegram
-// messages to a public chat.
+// messages to a channel.
 type TelegramNotifier struct {
 	api  API
 	chat string
 }
 
-// NewTelegramNotifier creates a new bot.
+// NewTelegramNotifier creates a new telegram client.
 func NewTelegramNotifier(token, chat string) (*TelegramNotifier, error) {
 	api, err := tg.NewBotAPI(token)
 	if err != nil {
@@ -36,7 +36,7 @@ func NewTelegramNotifier(token, chat string) (*TelegramNotifier, error) {
 	return bot, nil
 }
 
-// Notify sends a message to the Telegram chat.
+// Notify sends a message to a Telegram channel.
 func (t *TelegramNotifier) Notify(_ context.Context, item feed.Item) error {
 	msg := tg.NewMessageToChannel(t.chat, item.Link)
 	_, err := t.api.Send(msg)

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	tg "github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/sirupsen/logrus"
 )
 
 // API describes interface for working with remote API.
@@ -17,10 +18,11 @@ type API interface {
 type TelegramNotifier struct {
 	api  API
 	chat string
+	log  *logrus.Logger
 }
 
 // NewTelegramNotifier creates a new telegram client.
-func NewTelegramNotifier(token, chat string) (*TelegramNotifier, error) {
+func NewTelegramNotifier(token, chat string, log *logrus.Logger) (*TelegramNotifier, error) {
 	api, err := tg.NewBotAPI(token)
 	if err != nil {
 		return nil, fmt.Errorf("init telegram API: %w", err)
@@ -29,12 +31,14 @@ func NewTelegramNotifier(token, chat string) (*TelegramNotifier, error) {
 	bot := &TelegramNotifier{
 		api:  api,
 		chat: "@" + chat,
+		log:  log,
 	}
 	return bot, nil
 }
 
 // Notify sends a message to a Telegram channel.
 func (t *TelegramNotifier) Notify(_ context.Context, item Item) error {
+	t.log.Debugf("New item: %s", item)
 	msg := tg.NewMessageToChannel(t.chat, item.Link)
 	_, err := t.api.Send(msg)
 	if err != nil {

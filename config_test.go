@@ -33,24 +33,27 @@ func TestReadConfig(t *testing.T) {
 			UpdateInterval: 3 * time.Hour,
 			DataFile:       "./data.yaml",
 			Feeds:          []string{"https://example.com/rss.xml"},
+			LogLevel:       "info",
 		}
 		assert.Equal(t, expected, conf)
 	})
 
 	t.Run("debug config", func(t *testing.T) {
-		data := []byte("feeds: [\"https://example.com/rss.xml\"]\n" +
+		data := []byte("telegram_token: \"123456789:AAAAAAAAAAAAAAAAAAAAAAAAAAAAA-AAAAA\"\n" +
+			"feeds: [\"https://example.com/rss.xml\"]\n" +
 			"data_file: ./data.yaml\n" +
-			"log_notifier: true\n")
+			"log_level: \"debug\"\n")
 		assert.NoError(t, os.WriteFile(f, data, 0o600))
 
 		conf, err := ReadConfig(f)
 		assert.NoError(t, err)
 
 		expected := Config{
+			TelegramToken:  "123456789:AAAAAAAAAAAAAAAAAAAAAAAAAAAAA-AAAAA",
 			UpdateInterval: defaultUpdateInterval,
 			DataFile:       "./data.yaml",
 			Feeds:          []string{"https://example.com/rss.xml"},
-			LogNotifier:    true,
+			LogLevel:       "debug",
 		}
 		assert.Equal(t, expected, conf)
 	})

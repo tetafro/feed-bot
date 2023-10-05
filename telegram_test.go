@@ -3,9 +3,11 @@ package main
 import (
 	"context"
 	"errors"
+	"io"
 	"testing"
 
 	tg "github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,10 +15,12 @@ func TestTelegramNotifier_Notify(t *testing.T) {
 	item := Item{
 		Link: "http://example.com/content/",
 	}
+	log := logrus.New()
+	log.Out = io.Discard
 
 	t.Run("successful send", func(t *testing.T) {
 		api := &testTgAPI{}
-		tn := &TelegramNotifier{api: api, chat: "@chat_name"}
+		tn := &TelegramNotifier{api: api, chat: "@chat_name", log: log}
 
 		err := tn.Notify(context.Background(), item)
 		assert.NoError(t, err)
@@ -25,7 +29,7 @@ func TestTelegramNotifier_Notify(t *testing.T) {
 
 	t.Run("error from api", func(t *testing.T) {
 		api := &testTgAPI{err: errors.New("internal error")}
-		tn := &TelegramNotifier{api: api, chat: "@chat_name"}
+		tn := &TelegramNotifier{api: api, chat: "@chat_name", log: log}
 
 		err := tn.Notify(context.Background(), item)
 		assert.EqualError(t, err, "send api request: internal error")

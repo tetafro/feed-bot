@@ -4,22 +4,18 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/sirupsen/logrus"
 )
 
 func main() {
-	log.Print("Starting...")
-	if err := run(); err != nil {
-		log.Fatalf("ERROR: %v", err)
-	}
-	log.Print("Shutdown")
+	os.Exit(run())
 }
 
-func run() error {
+func run() int {
 	configFile := flag.String("config", "./config.yaml", "path to config file")
 	flag.Parse()
 
@@ -30,25 +26,30 @@ func run() error {
 	)
 	defer cancel()
 
+	log := logrus.New()
+
 	conf, err := ReadConfig(*configFile)
 	if err != nil {
-		return fmt.Errorf("read config: %w", err)
+		log.Errorf("Read config: %v", err)
+		return 1
 	}
+	level, err := logrus.ParseLevel(conf.LogLevel)
+	if err != nil {
+		log.Errorf("Invalid log level: %v", err)
+		return 1
+	}
+	log.SetLevel(level)
 
 	fs, err := NewFileStorage(conf.DataFile)
 	if err != nil {
-		return fmt.Errorf("init state storage: %w", err)
+		log.Errorf("Init state storage: %v", err)
+		return 1
 	}
 
-	var notifier Notifier
-	if conf.LogNotifier {
-		notifier = NewLogNotifier()
-	} else {
-		tg, err := NewTelegramNotifier(conf.TelegramToken, conf.TelegramChat)
-		if err != nil {
-			return fmt.Errorf("init telegram notifier: %w", err)
-		}
-		notifier = tg
+	tg, err := NewTelegramNotifier(conf.TelegramToken, conf.TelegramChat, log)
+	if err != nil {
+		log.Errorf("Init telegram notifier: %v", err)
+		return 1
 	}
 
 	feeds := make([]Feed, len(conf.Feeds))
@@ -56,7 +57,9 @@ func run() error {
 		feeds[i] = NewRSSFeed(fs, url)
 	}
 
-	NewBot(notifier, feeds, conf.UpdateInterval).Run(ctx)
+	log.Info("Starting...")
+	NewBot(tg, feeds, conf.UpdateInterval).Run(ctx)
 
-	return nil
+	log.Print("Shutdown")
+	return 0
 }

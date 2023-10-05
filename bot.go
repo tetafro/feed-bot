@@ -1,25 +1,21 @@
-// Package bot provides main application entity. It is responsible for wiring
-// together all components: data feeds, chats, state storage.
-package bot
+package main
 
 import (
 	"context"
 	"log"
 	"sync"
 	"time"
-
-	"github.com/tetafro/feed-bot/internal/feed"
 )
 
 // Notifier describes how clients are notified about new items.
 type Notifier interface {
-	Notify(context.Context, feed.Item) error
+	Notify(context.Context, Item) error
 }
 
 // Feed is a source of data.
 type Feed interface {
 	Name() string
-	Fetch() ([]feed.Item, error)
+	Fetch() ([]Item, error)
 }
 
 // Bot fetches new items from data feeds, and sends it to all clients.
@@ -29,14 +25,14 @@ type Bot struct {
 	interval time.Duration
 }
 
-// New creates new bot.
-func New(n Notifier, feeds []Feed, interval time.Duration) *Bot {
+// NewBot creates new bot.
+func NewBot(n Notifier, feeds []Feed, interval time.Duration) *Bot {
 	return &Bot{notifier: n, feeds: feeds, interval: interval}
 }
 
 // Run starts listening for updates.
 func (b *Bot) Run(ctx context.Context) {
-	items := make(chan feed.Item)
+	items := make(chan Item)
 
 	var wg sync.WaitGroup
 	wg.Add(len(b.feeds))
@@ -59,7 +55,7 @@ func (b *Bot) Run(ctx context.Context) {
 	}
 }
 
-func (b *Bot) runFetches(ctx context.Context, f Feed, out chan feed.Item) {
+func (b *Bot) runFetches(ctx context.Context, f Feed, out chan Item) {
 	// Run first fetch when started
 	b.fetch(f, out)
 
@@ -75,7 +71,7 @@ func (b *Bot) runFetches(ctx context.Context, f Feed, out chan feed.Item) {
 	}
 }
 
-func (b *Bot) fetch(f Feed, out chan feed.Item) {
+func (b *Bot) fetch(f Feed, out chan Item) {
 	items, err := f.Fetch()
 	if err != nil {
 		log.Printf("Failed to fetch items [%s]: %v", f.Name(), err)

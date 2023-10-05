@@ -1,4 +1,4 @@
-package notify
+package main
 
 import (
 	"bytes"
@@ -8,8 +8,6 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-
-	"github.com/tetafro/feed-bot/internal/feed"
 )
 
 func TestLogNotifier_Notify(t *testing.T) {
@@ -22,7 +20,7 @@ func TestLogNotifier_Notify(t *testing.T) {
 	log.SetFlags(0)
 
 	n := NewLogNotifier()
-	_ = n.Notify(context.Background(), feed.Item{
+	_ = n.Notify(context.Background(), Item{
 		Published: time.Date(2000, 1, 1, 10, 0, 0, 0, time.UTC),
 		Link:      "http://example.com/feed/",
 	})

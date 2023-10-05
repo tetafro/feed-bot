@@ -1,10 +1,8 @@
-package notify
+package main
 
 import (
 	"context"
 	"log"
-
-	"github.com/tetafro/feed-bot/internal/feed"
 )
 
 // LogNotifier prints all incoming messages. This is a notifier for
@@ -17,7 +15,7 @@ func NewLogNotifier() *LogNotifier {
 }
 
 // Notify prints item to stdout.
-func (ln *LogNotifier) Notify(_ context.Context, item feed.Item) error {
+func (ln *LogNotifier) Notify(_ context.Context, item Item) error {
 	log.Printf("[notify] New item: %s", item)
 	return nil
 }

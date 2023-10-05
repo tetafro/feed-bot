@@ -1,4 +1,4 @@
-package feed
+package main
 
 import (
 	"net/http"
@@ -113,6 +113,16 @@ func (s *testRSSServer) ServeHTTP(w http.ResponseWriter, _ *http.Request) {
 		`<link href="https://example.com/content/"/>` +
 		`</entry>` +
 		`</feed>`))
+}
+
+func TestItem_String(t *testing.T) {
+	item := Item{
+		Published: time.Date(2020, 1, 1, 10, 0, 0, 0, time.UTC),
+		Link:      "http://example.com/content/",
+	}
+
+	expected := "[2020-01-01 10:00] http://example.com/content/"
+	assert.Equal(t, expected, item.String())
 }
 
 type testStorage struct {

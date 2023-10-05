@@ -1,4 +1,4 @@
-package notify
+package main
 
 import (
 	"context"
@@ -7,12 +7,10 @@ import (
 
 	tg "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/stretchr/testify/assert"
-
-	"github.com/tetafro/feed-bot/internal/feed"
 )
 
 func TestTelegramNotifier_Notify(t *testing.T) {
-	item := feed.Item{
+	item := Item{
 		Link: "http://example.com/content/",
 	}
 

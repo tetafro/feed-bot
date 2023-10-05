@@ -1,17 +1,32 @@
-// Package feed is responsible for getting data from external source (RSS).
-package feed
+package main
 
 import (
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/mmcdole/gofeed"
 )
 
+// Default HTTP client timeout.
+const timeout = 3 * time.Second
+
 // Storage describes persistent datastorage.
 type Storage interface {
 	GetLastUpdate(feed string) time.Time
 	SaveLastUpdate(feed string, t time.Time) error
+}
+
+// Item is a single fetched item.
+type Item struct {
+	Published time.Time
+	Link      string
+}
+
+func (i Item) String() string {
+	return fmt.Sprintf("[%s] %s",
+		i.Published.Format("2006-01-02 15:04"),
+		i.Link)
 }
 
 // RSSFeed reads data from RSS feed.
@@ -24,7 +39,7 @@ type RSSFeed struct {
 // NewRSSFeed returns new RSS feed.
 func NewRSSFeed(s Storage, url string) *RSSFeed {
 	p := gofeed.NewParser()
-	p.Client = newHTTPClient()
+	p.Client = &http.Client{Timeout: timeout}
 	return &RSSFeed{
 		url:     url,
 		parser:  p,

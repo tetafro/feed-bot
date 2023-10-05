@@ -1,5 +1,4 @@
-// Package storage is responsible for storing data.
-package storage
+package main
 
 import (
 	"fmt"

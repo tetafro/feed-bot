@@ -38,7 +38,7 @@ ansible-lint:
 
 .PHONY: build
 build:
-	@ go build -o ./bin/feed-bot ./cmd/feed-bot
+	@ go build -o ./bin/feed-bot .
 
 .PHONY: run
 run:

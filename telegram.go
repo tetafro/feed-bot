@@ -1,13 +1,10 @@
-// Package notify provides tools for notifing external users.
-package notify
+package main
 
 import (
 	"context"
 	"fmt"
 
 	tg "github.com/go-telegram-bot-api/telegram-bot-api"
-
-	"github.com/tetafro/feed-bot/internal/feed"
 )
 
 // API describes interface for working with remote API.
@@ -37,7 +34,7 @@ func NewTelegramNotifier(token, chat string) (*TelegramNotifier, error) {
 }
 
 // Notify sends a message to a Telegram channel.
-func (t *TelegramNotifier) Notify(_ context.Context, item feed.Item) error {
+func (t *TelegramNotifier) Notify(_ context.Context, item Item) error {
 	msg := tg.NewMessageToChannel(t.chat, item.Link)
 	_, err := t.api.Send(msg)
 	if err != nil {

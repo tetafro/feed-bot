@@ -9,11 +9,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-
-	"github.com/tetafro/feed-bot/internal/bot"
-	"github.com/tetafro/feed-bot/internal/feed"
-	"github.com/tetafro/feed-bot/internal/notify"
-	"github.com/tetafro/feed-bot/internal/storage"
 )
 
 func main() {
@@ -35,33 +30,33 @@ func run() error {
 	)
 	defer cancel()
 
-	conf, err := bot.ReadConfig(*configFile)
+	conf, err := ReadConfig(*configFile)
 	if err != nil {
 		return fmt.Errorf("read config: %w", err)
 	}
 
-	fs, err := storage.NewFileStorage(conf.DataFile)
+	fs, err := NewFileStorage(conf.DataFile)
 	if err != nil {
 		return fmt.Errorf("init state storage: %w", err)
 	}
 
-	var notifier bot.Notifier
+	var notifier Notifier
 	if conf.LogNotifier {
-		notifier = notify.NewLogNotifier()
+		notifier = NewLogNotifier()
 	} else {
-		tg, err := notify.NewTelegramNotifier(conf.TelegramToken, conf.TelegramChat)
+		tg, err := NewTelegramNotifier(conf.TelegramToken, conf.TelegramChat)
 		if err != nil {
 			return fmt.Errorf("init telegram notifier: %w", err)
 		}
 		notifier = tg
 	}
 
-	feeds := make([]bot.Feed, len(conf.Feeds))
+	feeds := make([]Feed, len(conf.Feeds))
 	for i, url := range conf.Feeds {
-		feeds[i] = feed.NewRSSFeed(fs, url)
+		feeds[i] = NewRSSFeed(fs, url)
 	}
 
-	bot.New(notifier, feeds, conf.UpdateInterval).Run(ctx)
+	NewBot(notifier, feeds, conf.UpdateInterval).Run(ctx)
 
 	return nil
 }

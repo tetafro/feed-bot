@@ -1,4 +1,4 @@
-package bot
+package main
 
 import (
 	"bytes"
@@ -9,11 +9,10 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/tetafro/feed-bot/internal/feed"
 )
 
 func TestNewBot(t *testing.T) {
-	b := New(&testNotifier{}, []Feed{&testFeed{}}, 5*time.Second)
+	b := NewBot(&testNotifier{}, []Feed{&testFeed{}}, 5*time.Second)
 	assert.NotNil(t, b.notifier)
 	assert.Len(t, b.feeds, 1)
 	assert.Equal(t, b.interval, 5*time.Second)
@@ -26,16 +25,16 @@ func TestBot_Run(t *testing.T) {
 
 		n := &testNotifier{}
 		f1 := &testFeed{
-			items: []feed.Item{{Link: "One"}, {Link: "Two"}},
+			items: []Item{{Link: "One"}, {Link: "Two"}},
 		}
 		f2 := &testFeed{
-			items: []feed.Item{{Link: "Three"}, {Link: "Four"}},
+			items: []Item{{Link: "Three"}, {Link: "Four"}},
 		}
-		b := New(n, []Feed{f1, f2}, 1*time.Millisecond)
+		b := NewBot(n, []Feed{f1, f2}, 1*time.Millisecond)
 
 		b.Run(ctx)
 
-		expected := []feed.Item{
+		expected := []Item{
 			{Link: "One"}, {Link: "Two"}, {Link: "Three"}, {Link: "Four"},
 		}
 		assert.ElementsMatch(t, expected, n.items)
@@ -45,7 +44,7 @@ func TestBot_Run(t *testing.T) {
 		ctx, cancel := context.WithCancel(context.Background())
 
 		n := &testNotifier{}
-		b := New(n, []Feed{&testFeed{}}, 1*time.Millisecond)
+		b := NewBot(n, []Feed{&testFeed{}}, 1*time.Millisecond)
 
 		cancel()
 		b.Run(ctx)
@@ -66,14 +65,14 @@ func TestBot_Run(t *testing.T) {
 
 		n := &testNotifier{}
 		f1 := &testFeed{
-			items: []feed.Item{{Link: "One"}, {Link: "Two"}},
+			items: []Item{{Link: "One"}, {Link: "Two"}},
 		}
 		f2 := &testFeed{err: errors.New("fail")}
-		b := New(n, []Feed{f1, f2}, 1*time.Millisecond)
+		b := NewBot(n, []Feed{f1, f2}, 1*time.Millisecond)
 
 		b.Run(ctx)
 
-		expected := []feed.Item{
+		expected := []Item{
 			{Link: "One"}, {Link: "Two"},
 		}
 		assert.ElementsMatch(t, expected, n.items)
@@ -82,16 +81,16 @@ func TestBot_Run(t *testing.T) {
 }
 
 type testNotifier struct {
-	items []feed.Item
+	items []Item
 }
 
-func (n *testNotifier) Notify(_ context.Context, item feed.Item) error {
+func (n *testNotifier) Notify(_ context.Context, item Item) error {
 	n.items = append(n.items, item)
 	return nil
 }
 
 type testFeed struct {
-	items []feed.Item
+	items []Item
 	err   error
 	done  bool
 }
@@ -100,7 +99,7 @@ func (f *testFeed) Name() string {
 	return "test-name"
 }
 
-func (f *testFeed) Fetch() ([]feed.Item, error) {
+func (f *testFeed) Fetch() ([]Item, error) {
 	if f.done {
 		return nil, nil
 	}

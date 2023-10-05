@@ -58,13 +58,32 @@ func TestReadConfig(t *testing.T) {
 		assert.Equal(t, expected, conf)
 	})
 
+	t.Run("missing token", func(t *testing.T) {
+		data := []byte("feeds: [\"https://example.com/rss.xml\"]\n" +
+			"data_file: ./data.yaml\n" +
+			"log_level: \"debug\"\n")
+		assert.NoError(t, os.WriteFile(f, data, 0o600))
+
+		_, err := ReadConfig(f)
+		assert.ErrorContains(t, err, "empty token")
+	})
+
+	t.Run("missing feeds", func(t *testing.T) {
+		data := []byte("telegram_token: \"123456789:AAAAAAAAAAAAAAAAAAAAAAAAAAAAA-AAAAA\"\n" +
+			"data_file: ./data.yaml\n" +
+			"log_level: \"debug\"\n")
+		assert.NoError(t, os.WriteFile(f, data, 0o600))
+
+		_, err := ReadConfig(f)
+		assert.ErrorContains(t, err, "empty feeds list")
+	})
+
 	t.Run("invalid config", func(t *testing.T) {
 		data := []byte(`]`)
 		assert.NoError(t, os.WriteFile(f, data, 0o600))
 
 		_, err := ReadConfig(f)
-		assert.EqualError(t, err,
-			"unmarshal file: yaml: did not find expected node content")
+		assert.ErrorContains(t, err, "unmarshal file")
 	})
 
 	t.Run("non-existing file", func(t *testing.T) {

@@ -58,7 +58,7 @@ func run() int {
 	}
 
 	log.Info("Starting...")
-	NewBot(tg, feeds, conf.UpdateInterval).Run(ctx)
+	NewBot(tg, feeds, conf.UpdateInterval, log).Run(ctx)
 
 	log.Print("Shutdown")
 	return 0

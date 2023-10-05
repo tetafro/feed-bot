@@ -2,9 +2,10 @@ package main
 
 import (
 	"context"
-	"log"
 	"sync"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 // Notifier describes how clients are notified about new items.
@@ -23,11 +24,12 @@ type Bot struct {
 	notifier Notifier
 	feeds    []Feed
 	interval time.Duration
+	log      *logrus.Logger
 }
 
 // NewBot creates new bot.
-func NewBot(n Notifier, feeds []Feed, interval time.Duration) *Bot {
-	return &Bot{notifier: n, feeds: feeds, interval: interval}
+func NewBot(n Notifier, feeds []Feed, interval time.Duration, log *logrus.Logger) *Bot {
+	return &Bot{notifier: n, feeds: feeds, interval: interval, log: log}
 }
 
 // Run starts listening for updates.
@@ -50,7 +52,7 @@ func (b *Bot) Run(ctx context.Context) {
 
 	for item := range items {
 		if err := b.notifier.Notify(ctx, item); err != nil {
-			log.Printf("Failed to send notification: %v", err)
+			b.log.Errorf("Failed to send notification: %v", err)
 		}
 	}
 }
@@ -74,7 +76,7 @@ func (b *Bot) runFetches(ctx context.Context, f Feed, out chan Item) {
 func (b *Bot) fetch(f Feed, out chan Item) {
 	items, err := f.Fetch()
 	if err != nil {
-		log.Printf("Failed to fetch items [%s]: %v", f.Name(), err)
+		b.log.Errorf("Failed to fetch items [%s]: %v", f.Name(), err)
 		return
 	}
 	for _, item := range items {

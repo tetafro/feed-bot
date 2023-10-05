@@ -17,7 +17,7 @@ func TestNewFileStorage(t *testing.T) {
 			os.TempDir(),
 			fmt.Sprintf("feed-bot-testing-%d", time.Now().Nanosecond()),
 		)
-		defer os.Remove(file) //nolint: errcheck
+		defer os.Remove(file)
 
 		data := []byte("feeds:\n" +
 			"http://example.com/feed: 2021-03-20T05:00:00Z\n")
@@ -38,7 +38,7 @@ func TestNewFileStorage(t *testing.T) {
 			os.TempDir(),
 			fmt.Sprintf("feed-bot-testing-%d", time.Now().Nanosecond()),
 		)
-		defer os.Remove(file) //nolint: errcheck
+		defer os.Remove(file)
 
 		fs, err := NewFileStorage(file)
 		assert.NoError(t, err)
@@ -57,7 +57,7 @@ func TestNewFileStorage(t *testing.T) {
 			os.TempDir(),
 			fmt.Sprintf("feed-bot-testing-%d", time.Now().Nanosecond()),
 		)
-		defer os.Remove(file) //nolint: errcheck
+		defer os.Remove(file)
 
 		assert.NoError(t, os.WriteFile(file, []byte(""), 0o600))
 
@@ -77,7 +77,7 @@ func TestNewFileStorage(t *testing.T) {
 			os.TempDir(),
 			fmt.Sprintf("feed-bot-testing-%d", time.Now().Nanosecond()),
 		)
-		defer os.Remove(file) //nolint: errcheck
+		defer os.Remove(file)
 
 		data := []byte("]")
 		assert.NoError(t, os.WriteFile(file, data, 0o600))
@@ -105,7 +105,7 @@ func TestFileStorage_SaveLastUpdate(t *testing.T) {
 		os.TempDir(),
 		fmt.Sprintf("feed-bot-testing-%d", time.Now().Nanosecond()),
 	)
-	defer os.Remove(f) //nolint: errcheck
+	defer os.Remove(f)
 
 	fs, err := NewFileStorage(f)
 	assert.NoError(t, err)
@@ -125,7 +125,7 @@ func TestFileStorage_SaveLastUpdate(t *testing.T) {
 }
 
 func assertFile(t *testing.T, file, content string) {
-	b, err := os.ReadFile(file) //nolint: gosec
+	b, err := os.ReadFile(file)
 	assert.NoError(t, err)
 	assert.Equal(t, content, string(b))
 }

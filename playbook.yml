@@ -8,9 +8,9 @@
     image: ghcr.io/tetafro/feed-bot
     tag: latest
     container: feed-bot
-    dir: "~/feed-bot"
+    dir: "/etc/feed-bot"
   tasks:
-    - name: Create directory for docker volume
+    - name: Create configs directory
       file:
         path: "{{ dir }}"
         state: directory

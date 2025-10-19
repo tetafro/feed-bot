@@ -39,7 +39,6 @@ func (b *Bot) Run(ctx context.Context) {
 	var wg sync.WaitGroup
 	wg.Add(len(b.feeds))
 	for _, f := range b.feeds {
-		f := f
 		go func() {
 			b.runFetches(ctx, f, items)
 			wg.Done()

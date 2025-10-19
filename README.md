@@ -36,11 +36,5 @@ make deploy
 Encrypt
 ```sh
 echo "password" > .vault_pass.txt
-ansible-vault encrypt --output config.yaml.vault config.yaml
-```
-
-Edit
-```sh
-EDITOR='code --wait' \
-ansible-vault edit config.yaml.vault
+make config-encrypt
 ```

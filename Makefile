@@ -36,6 +36,14 @@ ansible-lint:
 	@ echo '--------------------'
 	@ ansible-lint -q ./playbook.yml && echo OK
 
+.PHONY: config-diff
+config-diff:
+	@ bash -c 'diff <(ansible-vault decrypt --output - config.yaml.vault) config.yaml || true'
+
+.PHONY: config-encrypt
+config-encrypt:
+	@ ansible-vault encrypt --output config.yaml.vault config.yaml
+
 .PHONY: build
 build:
 	@ go build -o ./bin/feed-bot .

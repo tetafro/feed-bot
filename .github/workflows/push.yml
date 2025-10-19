@@ -65,7 +65,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install linters
-        run: sudo apt install -y ansible ansible-lint yamllint
+        run: sudo apt install -qq -y ansible ansible-lint yamllint
 
       - name: Run yamllint
         run: yamllint --format colored --strict ./playbook.yml
@@ -112,10 +112,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install ansible
-        run: |
-          sudo apt-add-repository -y ppa:ansible/ansible
-          sudo apt update -y
-          sudo apt install -y ansible ansible-lint
+        run: sudo apt install -qq -y ansible
 
       - name: Setup ssh
         run: |

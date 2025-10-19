@@ -9,7 +9,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// FileStorage is a storage that uses plain text file for storing data.
+// FileStorage is a storage that uses plain a text file for storing data.
 type FileStorage struct {
 	file  string
 	state state

@@ -1,30 +1,27 @@
 run:
   concurrency: 2
-  deadline: 5m
-  skip-files:
-    - "_mock\\.go$"
+  timeout: 5m
 
 linters:
   disable-all: true
   enable:
     - asciicheck
     - bodyclose
+    - copyloopvar
     - cyclop
     - dogsled
     - durationcheck
+    - err113
     - errcheck
     - errname
     - errorlint
     - exhaustive
-    - exportloopref
-    - exportloopref
     - gochecknoinits
     - gocognit
     - goconst
     - gocritic
     - gocyclo
     - godot
-    - goerr113
     - gofmt
     - gofumpt
     - goimports
@@ -61,6 +58,8 @@ issues:
     - "G404: Use of weak random number generator"
     - "do not define dynamic errors, use wrapped static errors instead"
     - "Error return value of `.*.Body.Close` is not checked"
+  exclude-files:
+    - "_mock\\.go$"
   exclude-rules:
     - path: _test\.go
       linters:

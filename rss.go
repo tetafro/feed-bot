@@ -29,13 +29,13 @@ func (i Item) String() string {
 		i.Link)
 }
 
-// RSSFeed reads data from RSS feed.
+// RSSFetcher reads data from RSS feed.
 type RSSFetcher struct {
 	storage Storage
 	parser  *gofeed.Parser
 }
 
-// NewRSSFeed returns new RSS feed.
+// NewRSSFetcher returns new RSS feed.
 func NewRSSFetcher(s Storage) *RSSFetcher {
 	p := gofeed.NewParser()
 	p.Client = &http.Client{Timeout: timeout}

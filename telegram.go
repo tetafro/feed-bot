@@ -58,6 +58,8 @@ func NewPrintNotifier(log *logrus.Logger) *PrintNotifier {
 }
 
 // Notify prints the item.
+//
+//nolint:unparam
 func (n *PrintNotifier) Notify(_ context.Context, item Item) error {
 	n.log.Debugf("New item: %s", item)
 	return nil

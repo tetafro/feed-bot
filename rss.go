@@ -97,8 +97,7 @@ func parse(in *gofeed.Item) Item {
 
 	if in.PublishedParsed != nil {
 		item.Published = *in.PublishedParsed
-	}
-	if in.UpdatedParsed != nil {
+	} else if in.UpdatedParsed != nil {
 		item.Published = *in.UpdatedParsed
 	}
 

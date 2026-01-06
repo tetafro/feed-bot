@@ -55,9 +55,7 @@ func run() int {
 	}
 
 	feeds := make([]string, len(conf.Feeds))
-	for i, url := range conf.Feeds {
-		feeds[i] = url
-	}
+	copy(feeds, conf.Feeds)
 
 	log.Info("Starting...")
 	NewBot(tg, fetcher, feeds, conf.UpdateInterval, log).Run(ctx)

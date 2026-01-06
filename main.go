@@ -33,10 +33,10 @@ func run() int {
 		log.Errorf("Read config: %v", err)
 		return 1
 	}
-	level, err := logrus.ParseLevel(conf.LogLevel)
-	if err != nil {
-		log.Errorf("Invalid log level: %v", err)
-		return 1
+
+	level := logrus.InfoLevel
+	if conf.Debug {
+		level = logrus.DebugLevel
 	}
 	log.SetLevel(level)
 

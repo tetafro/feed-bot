@@ -38,11 +38,27 @@ func NewTelegramNotifier(token, chat string, log *logrus.Logger) (*TelegramNotif
 
 // Notify sends a message to a Telegram channel.
 func (t *TelegramNotifier) Notify(_ context.Context, item Item) error {
-	t.log.Debugf("New item: %s", item)
 	msg := tg.NewMessageToChannel(t.chat, item.Link)
 	_, err := t.api.Send(msg)
 	if err != nil {
 		return fmt.Errorf("send api request: %w", err)
 	}
+	return nil
+}
+
+// PrintNotifier is a notifier for debugging mode. It prints items without
+// sending them anywhere.
+type PrintNotifier struct {
+	log *logrus.Logger
+}
+
+// NewPrintNotifier creates a new PrintNotifier.
+func NewPrintNotifier(log *logrus.Logger) *PrintNotifier {
+	return &PrintNotifier{log: log}
+}
+
+// Notify prints the item.
+func (n *PrintNotifier) Notify(_ context.Context, item Item) error {
+	n.log.Debugf("New item: %s", item)
 	return nil
 }

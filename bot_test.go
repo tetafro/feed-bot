@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"sync"
 	"testing"
 	"time"
 
@@ -15,7 +16,7 @@ import (
 func TestNewBot(t *testing.T) {
 	log := logrus.New()
 	log.Out = io.Discard
-	b := NewBot(&testNotifier{}, []Feed{&testFeed{}}, 5*time.Second, log)
+	b := NewBot(&testNotifier{}, &testFetcher{}, []string{"test"}, 5*time.Second, log)
 	assert.NotNil(t, b.notifier)
 	assert.Len(t, b.feeds, 1)
 	assert.Equal(t, b.interval, 5*time.Second)
@@ -30,13 +31,13 @@ func TestBot_Run(t *testing.T) {
 		log.Out = io.Discard
 
 		n := &testNotifier{}
-		f1 := &testFeed{
-			items: []Item{{Link: "One"}, {Link: "Two"}},
+		f := &testFetcher{
+			items: map[string][]Item{
+				"f1": {{Link: "One"}, {Link: "Two"}},
+				"f2": {{Link: "Three"}, {Link: "Four"}},
+			},
 		}
-		f2 := &testFeed{
-			items: []Item{{Link: "Three"}, {Link: "Four"}},
-		}
-		b := NewBot(n, []Feed{f1, f2}, 1*time.Millisecond, log)
+		b := NewBot(n, f, []string{"f1", "f2"}, 1*time.Millisecond, log)
 
 		b.Run(ctx)
 
@@ -53,7 +54,8 @@ func TestBot_Run(t *testing.T) {
 		log.Out = io.Discard
 
 		n := &testNotifier{}
-		b := NewBot(n, []Feed{&testFeed{}}, 1*time.Millisecond, log)
+		f := &testFetcher{}
+		b := NewBot(n, f, []string{"f1", "f2"}, 1*time.Millisecond, log)
 
 		cancel()
 		b.Run(ctx)
@@ -70,19 +72,12 @@ func TestBot_Run(t *testing.T) {
 		defer cancel()
 
 		n := &testNotifier{}
-		f1 := &testFeed{
-			items: []Item{{Link: "One"}, {Link: "Two"}},
-		}
-		f2 := &testFeed{err: errors.New("fail")}
-		b := NewBot(n, []Feed{f1, f2}, 1*time.Millisecond, log)
+		f := &testFetcher{err: errors.New("fail")}
+		b := NewBot(n, f, []string{"f1"}, 1*time.Millisecond, log)
 
 		b.Run(ctx)
 
-		expected := []Item{
-			{Link: "One"}, {Link: "Two"},
-		}
-		assert.ElementsMatch(t, expected, n.items)
-		assert.Contains(t, buf.String(), "Failed to fetch items [test-name]: fail")
+		assert.Contains(t, buf.String(), "Failed to fetch items [f1]: fail")
 	})
 }
 
@@ -95,20 +90,23 @@ func (n *testNotifier) Notify(_ context.Context, item Item) error {
 	return nil
 }
 
-type testFeed struct {
-	items []Item
+type testFetcher struct {
+	items map[string][]Item
 	err   error
-	done  bool
+	done  map[string]bool
+	mx    sync.Mutex
 }
 
-func (f *testFeed) Name() string {
-	return "test-name"
-}
+func (f *testFetcher) Fetch(url string) ([]Item, error) {
+	f.mx.Lock()
+	defer f.mx.Unlock()
 
-func (f *testFeed) Fetch() ([]Item, error) {
-	if f.done {
+	if f.done == nil {
+		f.done = map[string]bool{}
+	}
+	if f.done[url] {
 		return nil, nil
 	}
-	f.done = true
-	return f.items, f.err
+	f.done[url] = true
+	return f.items[url], f.err
 }

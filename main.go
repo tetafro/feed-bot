@@ -46,19 +46,21 @@ func run() int {
 		return 1
 	}
 
+	fetcher := NewRSSFetcher(fs)
+
 	tg, err := NewTelegramNotifier(conf.TelegramToken, conf.TelegramChat, log)
 	if err != nil {
 		log.Errorf("Init telegram notifier: %v", err)
 		return 1
 	}
 
-	feeds := make([]Feed, len(conf.Feeds))
+	feeds := make([]string, len(conf.Feeds))
 	for i, url := range conf.Feeds {
-		feeds[i] = NewRSSFeed(fs, url)
+		feeds[i] = url
 	}
 
 	log.Info("Starting...")
-	NewBot(tg, feeds, conf.UpdateInterval, log).Run(ctx)
+	NewBot(tg, fetcher, feeds, conf.UpdateInterval, log).Run(ctx)
 
 	log.Info("Shutdown")
 	return 0

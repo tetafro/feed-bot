@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestFeed(t *testing.T) {
+func TestFetcher(t *testing.T) {
 	storage := &testStorage{
 		time: time.Date(2020, 1, 1, 10, 0, 0, 0, time.UTC),
 	}
@@ -18,8 +18,8 @@ func TestFeed(t *testing.T) {
 		server := httptest.NewServer(&testRSSServer{data: true})
 		defer server.Close()
 
-		f := NewRSSFeed(storage, server.URL)
-		items, err := f.Fetch()
+		f := NewRSSFetcher(storage)
+		items, err := f.Fetch(server.URL)
 		assert.NoError(t, err)
 		assert.Len(t, items, 1)
 
@@ -38,8 +38,8 @@ func TestFeed(t *testing.T) {
 			time: time.Date(2021, 1, 1, 10, 0, 0, 0, time.UTC),
 		}
 
-		f := NewRSSFeed(storage, server.URL)
-		items, err := f.Fetch()
+		f := NewRSSFetcher(storage)
+		items, err := f.Fetch(server.URL)
 		assert.NoError(t, err)
 		assert.Len(t, items, 0)
 	})
@@ -48,8 +48,8 @@ func TestFeed(t *testing.T) {
 		server := httptest.NewServer(&testRSSServer{data: false})
 		defer server.Close()
 
-		f := NewRSSFeed(storage, server.URL)
-		items, err := f.Fetch()
+		f := NewRSSFetcher(storage)
+		items, err := f.Fetch(server.URL)
 		assert.NoError(t, err)
 		assert.Len(t, items, 0)
 	})
@@ -60,8 +60,8 @@ func TestFeed(t *testing.T) {
 
 		storage := &testStorage{}
 
-		f := NewRSSFeed(storage, server.URL)
-		items, err := f.Fetch()
+		f := NewRSSFetcher(storage)
+		items, err := f.Fetch(server.URL)
 		assert.NoError(t, err)
 		assert.Len(t, items, 0)
 	})
@@ -70,15 +70,15 @@ func TestFeed(t *testing.T) {
 		server := httptest.NewServer(&testRSSServer{err: true})
 		defer server.Close()
 
-		f := NewRSSFeed(storage, server.URL)
-		_, err := f.Fetch()
+		f := NewRSSFetcher(storage)
+		_, err := f.Fetch(server.URL)
 		assert.EqualError(t, err,
 			"parse url: http error: 500 Internal Server Error")
 	})
 
 	t.Run("invalid url", func(t *testing.T) {
-		f := NewRSSFeed(storage, "xxx://example.com")
-		_, err := f.Fetch()
+		f := NewRSSFetcher(storage)
+		_, err := f.Fetch("xxx://example.com")
 		assert.EqualError(t, err,
 			`parse url: Get "xxx://example.com": unsupported protocol scheme "xxx"`)
 	})

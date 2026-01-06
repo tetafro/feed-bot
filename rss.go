@@ -30,40 +30,33 @@ func (i Item) String() string {
 }
 
 // RSSFeed reads data from RSS feed.
-type RSSFeed struct {
-	url     string
+type RSSFetcher struct {
 	storage Storage
 	parser  *gofeed.Parser
 }
 
 // NewRSSFeed returns new RSS feed.
-func NewRSSFeed(s Storage, url string) *RSSFeed {
+func NewRSSFetcher(s Storage) *RSSFetcher {
 	p := gofeed.NewParser()
 	p.Client = &http.Client{Timeout: timeout}
-	return &RSSFeed{
-		url:     url,
+	return &RSSFetcher{
 		parser:  p,
 		storage: s,
 	}
 }
 
-// Name returns feed's URL for identification.
-func (f *RSSFeed) Name() string {
-	return f.url
-}
-
 // Fetch fetches last item from RSS feed.
-func (f *RSSFeed) Fetch() ([]Item, error) {
-	last := f.storage.GetLastUpdate(f.url)
+func (f *RSSFetcher) Fetch(url string) ([]Item, error) {
+	last := f.storage.GetLastUpdate(url)
 	if last.IsZero() {
 		// First access
-		if err := f.storage.SaveLastUpdate(f.url, time.Now()); err != nil {
+		if err := f.storage.SaveLastUpdate(url, time.Now()); err != nil {
 			return nil, fmt.Errorf("save last update time: %w", err)
 		}
 		return nil, nil
 	}
 
-	feed, err := f.parser.ParseURL(f.url)
+	feed, err := f.parser.ParseURL(url)
 	if err != nil {
 		return nil, fmt.Errorf("parse url: %w", err)
 	}
@@ -83,7 +76,7 @@ func (f *RSSFeed) Fetch() ([]Item, error) {
 		return nil, nil
 	}
 
-	if err := f.storage.SaveLastUpdate(f.url, items[0].Published); err != nil {
+	if err := f.storage.SaveLastUpdate(url, items[0].Published); err != nil {
 		return nil, fmt.Errorf("save last update time: %w", err)
 	}
 	return items, nil

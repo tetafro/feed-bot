@@ -65,6 +65,5 @@ deploy:
 	@ ansible-playbook \
 	--become \
 	--private-key ~/.ssh/id_ed25519 \
-	--inventory '${SSH_SERVER},' \
-	--user ${SSH_USER} \
+	--inventory 'www,' \
 	./playbook.yml

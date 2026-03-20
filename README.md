@@ -24,10 +24,8 @@ make build run
 
 Normally deploy is done by Github actions.
 
-Manual deploy
+Manual deploy (requires `www` host in the SSH config)
 ```sh
-SSH_SERVER=10.0.0.1:22 \
-SSH_USER=user \
 make deploy
 ```
 

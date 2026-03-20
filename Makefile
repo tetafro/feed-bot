@@ -44,6 +44,10 @@ config-diff:
 config-encrypt:
 	@ ansible-vault encrypt --output config.yaml.vault config.yaml
 
+.PHONY: config-decrypt
+config-decrypt:
+	@ ansible-vault decrypt --output config.yaml config.yaml.vault
+
 .PHONY: build
 build:
 	@ go build -o ./bin/feed-bot .
